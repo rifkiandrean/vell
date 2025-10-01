@@ -175,11 +175,30 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
       setIsLoadingMessages(false);
     });
 
-    // Gallery images listener
+    // --- Gallery Images Caching Logic ---
+    const galleryCacheKey = 'upd-gallery-cache';
+
+    // 1. Try to load from localStorage first
+    try {
+        const cachedGallery = localStorage.getItem(galleryCacheKey);
+        if (cachedGallery) {
+            setGalleryImages(JSON.parse(cachedGallery));
+        }
+    } catch (error) {
+        console.warn("Could not read gallery from localStorage", error);
+    }
+    
+    // 2. Set up Firestore listener to get fresh data and update cache
     const qGallery = query(collection(db, "upd_gallery_images"), orderBy("createdAt", "asc"));
     const unsubGallery = onSnapshot(qGallery, (snapshot) => {
       const images: GalleryImage[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage));
-      setGalleryImages(images);
+      setGalleryImages(images); // Update state for immediate view
+      try {
+          // Update localStorage for next visit
+          localStorage.setItem(galleryCacheKey, JSON.stringify(images));
+      } catch (error) {
+          console.warn("Could not save gallery to localStorage", error);
+      }
     });
 
 

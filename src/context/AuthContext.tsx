@@ -6,7 +6,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, User,
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
-import type { CompanyInfo } from '@/lib/types';
+import type { CompanyInfo, LandingPageContent } from '@/lib/types';
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 
@@ -28,6 +28,7 @@ interface AuthContextType {
   companyName: string;
   logoUrl?: string;
   ersLogoUrl?: string;
+  vellLogoUrl?: string;
   websiteVersion?: string;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -42,6 +43,8 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({ companyName: initialCompanyName, logoUrl: '', ersLogoUrl: '', websiteVersion: ''});
+  const [landingPageContent, setLandingPageContent] = useState<LandingPageContent>({});
+
   
   const login = (email: string, password: string) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -80,7 +83,7 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
       setLoading(false);
     });
 
-    const unsubSettings = onSnapshot(doc(db, "settings", "companyInfo"), (docSnap) => {
+    const unsubCompanyInfo = onSnapshot(doc(db, "settings", "companyInfo"), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data() as CompanyInfo;
             setCompanyInfo({
@@ -92,9 +95,16 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
         }
     });
 
+    const unsubLandingPage = onSnapshot(doc(db, "settings", "landingPage"), (docSnap) => {
+        if (docSnap.exists()) {
+            setLandingPageContent(docSnap.data() as LandingPageContent);
+        }
+    });
+
     return () => {
         unsubAuth();
-        unsubSettings();
+        unsubCompanyInfo();
+        unsubLandingPage();
     };
   }, [initialCompanyName]);
 
@@ -104,6 +114,7 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
     companyName: companyInfo.companyName,
     logoUrl: transformGoogleDriveUrl(companyInfo.logoUrl || ''),
     ersLogoUrl: transformGoogleDriveUrl(companyInfo.ersLogoUrl || ''),
+    vellLogoUrl: transformGoogleDriveUrl(landingPageContent.vellLogoUrl || ''),
     websiteVersion: companyInfo.websiteVersion,
     login,
     logout,

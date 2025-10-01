@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import Image from 'next/image';
 import { logActivity } from '@/lib/activity-log';
-import { Mountain } from 'lucide-react';
 
 export default function ErsLoginPage() {
   const [email, setEmail] = useState('');
@@ -21,6 +20,16 @@ export default function ErsLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showVellLogo, setShowVellLogo] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowVellLogo(true);
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
+  }, []);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +54,8 @@ export default function ErsLoginPage() {
       <main className="flex-grow flex items-center justify-center px-4">
         <div className="w-full max-w-md">
            <div className="flex flex-col items-center justify-center mb-6">
-              {ersLogoUrl ? (
+              {showVellLogo && ersLogoUrl && (
                   <Image src={ersLogoUrl} alt={`VELL logo`} width={40} height={40} className="h-10 w-10 object-contain" />
-                ) : (
-                  <Mountain className="h-8 w-8 text-primary" />
               )}
               <h1 className="text-3xl font-bold tracking-tight text-primary mt-2">
                 VELL

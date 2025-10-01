@@ -24,11 +24,11 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 30 53% 24%;
     --radius: 0.5rem;
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: 30 50% 60%;
-    --chart-4: 30 40% 75%;
-    --chart-5: 30 50% 25%;
+    --chart-1: 220 14% 36%; /* darker-grey-blue */
+    --chart-2: 220 13% 46%; /* mid-grey-blue */
+    --chart-3: 216 12% 52%; /* lighter-grey-blue */
+    --chart-4: 218 11% 65%; /* light-grey-blue */
+    --chart-5: 224 15% 26%; /* very-dark-grey-blue */
   }
 
   .dark {
@@ -51,11 +51,11 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 28 47% 45%;
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: 35 50% 50%;
-    --chart-4: 35 40% 60%;
-    --chart-5: 35 40% 80%;
+    --chart-1: 215 25% 27%; /* dark-grey-blue */
+    --chart-2: 216 12% 52%; /* lighter-grey-blue */
+    --chart-3: 218 11% 65%; /* light-grey-blue */
+    --chart-4: 217 32% 17%; /* very-dark-grey-blue */
+    --chart-5: 224 15% 26%; /* dark-grey-blue-2 */
   }
 }
 
@@ -67,5 +67,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-    

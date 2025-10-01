@@ -232,22 +232,46 @@ export type WeddingInfo = {
 export type GalleryImage = {
   id: string;
   imageUrl: string;
-  order: number;
   createdAt: any; // Firestore Timestamp
 };
 
 
 // --- VELL Landing Page Types ---
+export type HeroSlide = {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  imageHint: string;
+  order: number;
+};
+
+export type PricingPackage = {
+  id: string;
+  name: string;
+  price: number;
+  pricePeriod: 'sekali bayar' | 'per bulan' | 'per tahun';
+  features: string[]; // Features can be prefixed with '!' to denote exclusion
+  isPopular: boolean;
+  order: number;
+};
+
 export type LandingPageContent = {
   websiteTitle?: string;
   brandName?: string;
-  heroTitle?: string;
-  heroSubtitle?: string;
-  heroImageUrl?: string;
-  featuresSubtitle?: string;
-  portfolioSubtitle?: string;
-  portfolioImageUrl1?: string;
-  portfolioImageUrl2?: string;
+  vellLogoUrl?: string;
+  productsSectionTitle?: string;
+  productsSectionSubtitle?: string;
+  
+  product1Title?: string;
+  product1Description?: string;
+  product1ImageUrl?: string;
+  product1Link?: string;
+
+  product2Title?: string;
+  product2Description?: string;
+  product2ImageUrl?: string;
+  product2Link?: string;
 };
 
 // --- VELL Post Types ---

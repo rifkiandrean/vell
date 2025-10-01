@@ -229,7 +229,7 @@ export function POForm({ poId }: POFormProps) {
             logActivity(user, `Membuat PO baru #${newId} dengan status '${newStatus}'`);
             toast({ title: "Sukses!", description: `Purchase Order baru telah dibuat.` });
         }
-        router.push('/cafe/admin/orders');
+        router.push('/ers/cafe/admin/orders');
     } catch (error) {
         console.error("Gagal menyimpan PO:", error);
         toast({ title: "Error", description: "Gagal menyimpan Purchase Order.", variant: "destructive" });
@@ -255,7 +255,7 @@ export function POForm({ poId }: POFormProps) {
             toast({ title: "Menunggu Pembayaran", description: "PO telah diteruskan ke bagian keuangan untuk pembayaran."});
         }
         
-        router.push('/cafe/admin/orders');
+        router.push('/ers/cafe/admin/orders');
 
     } catch(error) {
         console.error("Gagal mengubah status:", error);
@@ -299,7 +299,7 @@ export function POForm({ poId }: POFormProps) {
         });
         logActivity(user, `Menyelesaikan PO #${poId} dan memperbarui stok.`);
         toast({ title: "Sukses!", description: "Stok gudang telah diperbarui dan PO ditandai selesai." });
-        router.push('/cafe/admin/orders');
+        router.push('/ers/cafe/admin/orders');
 
     } catch (error) {
         console.error("Gagal menyelesaikan PO:", error);
@@ -527,7 +527,7 @@ export function POForm({ poId }: POFormProps) {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             {showSaveAsDraftButton && (
-                 <Button type="button" variant="outline" onClick={() => handleSave(form.getValues(), 'Draft')} disabled={form.formState.isSubmitting}>
+                 <Button type="button" variant="outline" onClick={form.handleSubmit((data) => handleSave(data, 'Draft'))} disabled={form.formState.isSubmitting}>
                     <Save className="mr-2 h-4 w-4"/> Simpan sebagai Draft
                 </Button>
             )}

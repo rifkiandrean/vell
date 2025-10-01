@@ -13,8 +13,8 @@ export default function PostsLayout({
       <header className="py-4 px-6 sticky top-0 bg-background/80 backdrop-blur-sm z-10 border-b">
          <div className="container mx-auto flex justify-between items-center">
              <Link href="/" className="flex items-center justify-center" prefetch={false}>
-                <Mountain className="h-6 w-6 text-primary" />
-                <span className="ml-2 text-xl font-bold tracking-tight text-primary">VELL</span>
+                <Mountain className="h-6 w-6" />
+                <span className="ml-2 text-xl font-bold tracking-tight text-black">VELL</span>
             </Link>
             <Button asChild variant="outline">
                 <Link href="/">

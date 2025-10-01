@@ -21,16 +21,12 @@ const formatRupiah = (price?: number) => {
     }).format(price);
 };
 
-// Helper to convert image URL to Base64 using Next.js image proxy to bypass CORS
+// Helper to convert image URL to Base64. It now assumes the URL is publicly accessible.
 const imageUrlToBase64 = async (url: string): Promise<string> => {
-    // Construct the Next.js image optimization URL. We can use a dummy width (w) and quality (q).
-    const proxyUrl = `/_next/image?url=${encodeURIComponent(url)}&w=640&q=75`;
-    const response = await fetch(proxyUrl);
-    
+    const response = await fetch(url);
     if (!response.ok) {
-        throw new Error(`Failed to fetch image through proxy: ${response.statusText}`);
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
-
     const blob = await response.blob();
     return new Promise((resolve, reject) => {
         const reader = new FileReader();

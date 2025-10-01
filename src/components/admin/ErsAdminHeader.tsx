@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { LogOut, User, Lock, Presentation, Settings, Newspaper } from 'lucide-react';
+import { LogOut, User, Lock, Settings, Newspaper } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '../ui/dropdown-menu';
@@ -15,7 +15,7 @@ import { Mountain } from 'lucide-react';
 
 
 export function ErsAdminHeader() {
-  const { user, logout, ersLogoUrl, websiteVersion } = useAuth();
+  const { user, logout, vellLogoUrl, websiteVersion, transformGoogleDriveUrl } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -26,19 +26,19 @@ export function ErsAdminHeader() {
     router.push('/admin/login');
   };
   
+  const logoUrl = vellLogoUrl ? transformGoogleDriveUrl(vellLogoUrl) : null;
+
   return (
     <Dialog>
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/admin" className="flex items-center gap-2 ml-2">
-              {ersLogoUrl ? (
-                  <Image src={ersLogoUrl} alt="VELL logo" width={32} height={32} className="h-8 w-8 object-contain" />
-              ) : (
-                  <Mountain className="h-8 w-8 text-primary" />
+              {logoUrl && (
+                  <Image src={logoUrl} alt="VELL logo" width={32} height={32} className="h-8 w-8 object-contain" />
               )}
               <div className="flex items-baseline gap-2">
-                  <h1 className="text-2xl font-bold tracking-tighter">VELL</h1>
+                  <h1 className="text-2xl font-bold tracking-tighter text-black">VELL</h1>
               </div>
             </Link>
           </div>

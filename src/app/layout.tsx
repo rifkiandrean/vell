@@ -12,25 +12,31 @@ import { db } from '@/lib/firebase';
 import type { LandingPageContent } from '@/lib/types';
 
 
-async function getWebsiteTitle(): Promise<string> {
+async function getWebsiteSettings(): Promise<{title: string, vellLogoUrl?: string}> {
     try {
         const docRef = doc(db, "settings", "landingPage");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const data = docSnap.data() as LandingPageContent;
-            return data.websiteTitle || "VELL - Elektronik Restoran Sistem";
+            return {
+                title: data.websiteTitle || "VELL - Elektronik Restoran Sistem",
+                vellLogoUrl: data.vellLogoUrl || ""
+            };
         }
     } catch (error) {
         console.error("Error fetching website title:", error);
     }
-    return "VELL - Elektronik Restoran Sistem";
+    return { title: "VELL - Elektronik Restoran Sistem" };
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = await getWebsiteTitle();
+  const settings = await getWebsiteSettings();
   return {
-    title: title,
+    title: settings.title,
     description: "Solusi lengkap dari Point-of-Sale (POS), manajemen inventaris, hingga analitik penjualan untuk membawa restoran Anda ke level berikutnya.",
+    icons: {
+      icon: settings.vellLogoUrl || '/favicon.ico',
+    },
   };
 }
 
@@ -64,5 +70,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-    
