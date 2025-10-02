@@ -10,7 +10,8 @@ import { CashierMenu } from './CashierMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PendingPayments } from './PendingPayments';
-import { CompletedOrders } from './CompletedOrders'; // Import the new component
+import { CompletedOrders } from './CompletedOrders'; 
+import { ProcessingOrders } from './ProcessingOrders';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -23,11 +24,11 @@ interface OrderWithId extends OrderData {
 
 function NewOrder() {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 h-full">
             <div className="lg:col-span-2">
                 <CashierMenu />
             </div>
-            <div className="lg:sticky lg:top-24">
+            <div className="lg:sticky lg:top-24 h-fit">
                 <OrderSummary isCashier={true}/>
             </div>
         </div>
@@ -43,7 +44,6 @@ export function CashierDisplay() {
     const { requestPermission, showNotification } = useNotifications();
     const { playSound } = useSettings();
     const { user } = useAuth();
-    const cashierName = user?.displayName || user?.email;
 
      useEffect(() => {
         requestPermission();
@@ -91,13 +91,8 @@ export function CashierDisplay() {
 
     return (
         <>
-            {cashierName && (
-                 <div className="mb-4 text-sm font-semibold text-muted-foreground">
-                    Kasir: <span className="font-bold text-primary">{cashierName}</span>
-                </div>
-            )}
             <Tabs defaultValue="pending" className="h-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="pending">
                         Pembayaran Tertunda
                         {pendingOrders.length > 0 && (
@@ -105,13 +100,17 @@ export function CashierDisplay() {
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="new">Pesanan Baru (POS)</TabsTrigger>
+                    <TabsTrigger value="processing">Pesanan Diproses</TabsTrigger>
                     <TabsTrigger value="completed">Pesanan Selesai</TabsTrigger>
                 </TabsList>
                 <TabsContent value="pending" className="mt-4">
                     <PendingPayments pendingOrders={pendingOrders} isLoading={isLoading} />
                 </TabsContent>
-                <TabsContent value="new" className="mt-4">
+                <TabsContent value="new" className="mt-4 h-full">
                     <NewOrder />
+                </TabsContent>
+                 <TabsContent value="processing" className="mt-4">
+                    <ProcessingOrders />
                 </TabsContent>
                 <TabsContent value="completed" className="mt-4">
                     <CompletedOrders />

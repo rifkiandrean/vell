@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import type { OrderData, ExpenseItem, MenuItem, InventoryItem, RecipeItem } from '@/lib/types';
+import type { OrderData, ExpenseItem, MenuItem, InventoryItem, RecipeItem, PurchaseOrder } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export function AuditDisplay() {
     const { companyName } = useAuth();
     const [allCompletedOrders, setAllCompletedOrders] = useState<(OrderData & {id: string, completedAt: any})[]>([]);
     const [allExpenses, setAllExpenses] = useState<ExpenseItem[]>([]);
+    const [allCompletedPOs, setAllCompletedPOs] = useState<PurchaseOrder[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
@@ -55,6 +57,10 @@ export function AuditDisplay() {
             setAllCompletedOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrderData & {id: string, completedAt: any})));
         });
 
+        const unsubPOs = onSnapshot(query(collection(db, "purchase_orders"), orderBy("receivedDate", "desc")), (snapshot) => {
+            setAllCompletedPOs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PurchaseOrder)).filter(po => po.status === 'Completed'));
+        });
+
         const unsubExpenses = onSnapshot(query(collection(db, "expenses"), orderBy("date", "desc")), (snapshot) => {
             setAllExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseItem)));
         });
@@ -71,6 +77,7 @@ export function AuditDisplay() {
         return () => {
             unsubOrders();
             unsubExpenses();
+            unsubPOs();
             unsubMenu();
             unsubInventory();
         };
@@ -78,7 +85,7 @@ export function AuditDisplay() {
     
     const filteredData = useMemo(() => {
         if (!date?.from) {
-            return { orders: [], expenses: [], systemCash: 0, systemNonCash: 0, systemTotal: 0 };
+            return { orders: [], expenses: [], completedPOs: [], systemCash: 0, systemNonCash: 0, systemTotal: 0 };
         }
         const fromDate = startOfDay(date.from);
         const toDate = date.to ? endOfDay(date.to) : endOfDay(date.from);
@@ -106,10 +113,16 @@ export function AuditDisplay() {
             return expenseDate >= fromDate && expenseDate <= toDate;
         });
 
+        const completedPOs = allCompletedPOs.filter(po => {
+            if (!po.receivedDate?.toDate) return false;
+            const poDate = po.receivedDate.toDate();
+            return poDate >= fromDate && poDate <= toDate;
+        });
+
         const systemTotal = systemCash + systemNonCash;
 
-        return { orders, expenses, systemCash, systemNonCash, systemTotal };
-    }, [allCompletedOrders, allExpenses, date]);
+        return { orders, expenses, completedPOs, systemCash, systemNonCash, systemTotal };
+    }, [allCompletedOrders, allExpenses, allCompletedPOs, date]);
 
     const inventoryPriceMap = useMemo(() => {
         return new Map(inventory.map(item => [item.id, item.price || 0]));
@@ -141,8 +154,8 @@ export function AuditDisplay() {
                 return itemSum;
             }, 0);
             
-            // HPP = Biaya Resep + PPN + Biaya Layanan
-            const orderCogs = recipeCost + order.ppnAmount + order.serviceChargeAmount;
+            // HPP = Biaya Resep.
+            const orderCogs = recipeCost;
 
             totalRevenue += orderRevenue;
             totalCogs += orderCogs;
@@ -153,13 +166,13 @@ export function AuditDisplay() {
                 profit: orderRevenue - orderCogs,
             };
         });
-
+        
+        const totalIngredientCost = filteredData.completedPOs.reduce((sum, po) => sum + po.totalAmount, 0);
         const grossProfit = totalRevenue - totalCogs;
-        const totalExpenses = filteredData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-        const netProfit = grossProfit - totalExpenses;
+        const totalOperationalExpenses = filteredData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const netProfit = grossProfit - totalOperationalExpenses - totalIngredientCost;
 
-
-        return { totalRevenue, totalCogs, grossProfit, totalExpenses, netProfit, ordersWithCost };
+        return { totalRevenue, totalCogs, grossProfit, totalOperationalExpenses, totalIngredientCost, netProfit, ordersWithCost };
     }, [filteredData, menuItemRecipeMap, calculateRecipeCost]);
     
     const realTotal = realCash + realNonCash;
@@ -200,8 +213,11 @@ export function AuditDisplay() {
             // 2. Export detailed PDF report
              exportFinancialsToPDF({
                 date,
-                detailedFinancials: detailedFinancials,
-                expenses: filteredData.expenses,
+                detailedFinancials: { 
+                    ...detailedFinancials, 
+                    expenses: filteredData.expenses, 
+                    completedPOs: filteredData.completedPOs 
+                },
                 companyName: companyName,
              });
 

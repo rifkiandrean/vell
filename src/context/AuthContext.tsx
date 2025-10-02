@@ -15,6 +15,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   companyName: string;
+  address?: string;
+  phone?: string;
   logoUrl?: string;
   ersLogoUrl?: string;
   vellLogoUrl?: string;
@@ -76,10 +78,8 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
         if (docSnap.exists()) {
             const data = docSnap.data() as CompanyInfo;
             setCompanyInfo({
+                ...data,
                 companyName: data.companyName || initialCompanyName,
-                logoUrl: data.logoUrl || '',
-                ersLogoUrl: data.ersLogoUrl || '',
-                websiteVersion: data.websiteVersion || ''
             });
         }
     });
@@ -101,6 +101,8 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
     user,
     loading,
     companyName: companyInfo.companyName,
+    address: companyInfo.address,
+    phone: companyInfo.phone,
     logoUrl: transformGoogleDriveUrl(companyInfo.logoUrl || ''),
     ersLogoUrl: transformGoogleDriveUrl(companyInfo.ersLogoUrl || ''),
     vellLogoUrl: transformGoogleDriveUrl(landingPageContent.vellLogoUrl || ''),
