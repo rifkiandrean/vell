@@ -367,24 +367,26 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
                 <footer className="mt-2 text-sm font-semibold">QS. Ar-Rum: 21</footer>
             </blockquote>
 
-            <section id="story" className="text-center">
-              <h2 className="text-4xl font-bold mb-12" style={{ fontFamily: 'serif' }}>Perjalanan Kisah Kami</h2>
-              <div className="relative max-w-2xl mx-auto">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border -translate-x-1/2"></div>
-                {weddingInfo.storyTimeline && weddingInfo.storyTimeline.map((item, index) => (
-                  <div key={index} className="relative pl-12 mb-12">
-                    <div className="absolute left-4 top-1 -translate-x-1/2 bg-background p-1 rounded-full border-2 border-primary">
-                        <div className="h-3 w-3 bg-primary rounded-full"></div>
+            {weddingInfo.storyTimeline && weddingInfo.storyTimeline.length > 0 && (
+              <section id="story" className="text-center">
+                <h2 className="text-4xl font-bold mb-12" style={{ fontFamily: 'serif' }}>Perjalanan Kisah Kami</h2>
+                <div className="relative max-w-2xl mx-auto">
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border -translate-x-1/2"></div>
+                  {weddingInfo.storyTimeline.map((item, index) => (
+                    <div key={index} className="relative pl-12 mb-12">
+                      <div className="absolute left-4 top-1 -translate-x-1/2 bg-background p-1 rounded-full border-2 border-primary">
+                          <div className="h-3 w-3 bg-primary rounded-full"></div>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-primary text-sm">{item.date}</p>
+                        <h3 className="text-2xl font-semibold mt-1" style={{ fontFamily: 'serif' }}>{item.title}</h3>
+                        <p className="text-muted-foreground mt-2 text-sm">{item.description}</p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-primary text-sm">{item.date}</p>
-                      <h3 className="text-2xl font-semibold mt-1" style={{ fontFamily: 'serif' }}>{item.title}</h3>
-                      <p className="text-muted-foreground mt-2 text-sm">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section id="gallery" className="text-center">
                 <h2 className="text-4xl font-bold mb-12" style={{ fontFamily: 'serif' }}>Galeri Momen</h2>

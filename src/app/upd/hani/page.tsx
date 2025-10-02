@@ -31,6 +31,7 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 invitedFamilies: data.invitedFamilies || [],
                 coverImageUrl: data.coverImageUrl || '',
                 storyTimeline: data.storyTimeline || [],
+                coverFont: data.coverFont || 'serif',
             };
         }
     } catch (error) {
@@ -55,6 +56,7 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         invitedFamilies: [],
         coverImageUrl: "",
         storyTimeline: [],
+        coverFont: 'serif',
     };
 }
 
