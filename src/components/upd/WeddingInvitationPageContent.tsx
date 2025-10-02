@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply } from 'lucide-react';
+import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply, Home, GalleryHorizontal, Music, VolumeX } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -107,6 +107,28 @@ function AdminReplyForm({ messageId }: { messageId: string }) {
     );
 }
 
+function FloatingNav({ onScroll, onToggleMusic, isMusicPlaying }: { onScroll: (id: string) => void; onToggleMusic: () => void; isMusicPlaying: boolean; }) {
+  const navItems = [
+    { id: 'couple', label: 'Home', icon: Home },
+    { id: 'events', label: 'Acara', icon: Calendar },
+    { id: 'gallery', label: 'Galeri', icon: GalleryHorizontal },
+    { id: 'guestbook', label: 'Buku Tamu', icon: BookHeart },
+  ];
+
+  return (
+    <div className="fixed bottom-4 right-4 z-40 flex flex-col items-center gap-3">
+        <button onClick={onToggleMusic} className="bg-background/80 backdrop-blur-sm p-3 rounded-full shadow-lg border hover:bg-muted">
+            {isMusicPlaying ? <VolumeX className="h-5 w-5" /> : <Music className="h-5 w-5" />}
+        </button>
+        {navItems.map(item => (
+             <button key={item.id} onClick={() => onScroll(item.id)} className="bg-background/80 backdrop-blur-sm p-3 rounded-full shadow-lg border hover:bg-muted">
+                <item.icon className="h-5 w-5" />
+             </button>
+        ))}
+    </div>
+  );
+}
+
 export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWeddingInfo: WeddingInfo }) {
   const { toast } = useToast();
   const { user, transformGoogleDriveUrl } = useAuth();
@@ -123,6 +145,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
   const [guestbookSubmitted, setGuestbookSubmitted] = useState(false);
   const [weddingInfo, setWeddingInfo] = useState<WeddingInfo>(initialWeddingInfo);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -207,13 +230,28 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
         unsubGallery();
     };
   }, []);
+  
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const toggleMusic = () => {
+    if (!audioRef.current || !weddingInfo.isMusicEnabled) return;
+    if (isMusicPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+    }
+    setIsMusicPlaying(!isMusicPlaying);
+  };
 
   const handleOpenInvitation = () => {
     setIsOpened(true);
     if (audioRef.current && weddingInfo.isMusicEnabled) {
       audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+      setIsMusicPlaying(true);
     }
-    document.getElementById('couple')?.scrollIntoView({ behavior: 'smooth' });
+    scrollToSection('couple');
   };
 
 
@@ -308,6 +346,14 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
         )}
       </AnimatePresence>
         
+      <AnimatePresence>
+        {isOpened && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }}>
+                <FloatingNav onScroll={scrollToSection} onToggleMusic={toggleMusic} isMusicPlaying={isMusicPlaying} />
+            </motion.div>
+        )}
+      </AnimatePresence>
+
       <div id="main-invitation" className={isOpened ? 'block' : 'hidden'}>
         <main className="container mx-auto px-4 py-16 sm:py-24 space-y-24">
             <section id="couple" className="text-center">
