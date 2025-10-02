@@ -9,7 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export const GeneratedMenuItemSchema = z.object({
   name: z.string().describe('The name of the menu item.'),
@@ -67,7 +67,7 @@ const generateMenuItemsFlow = ai.defineFlow(
     outputSchema: GenerateMenuItemsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { model: googleAI.model('gemini-pro') });
+    const {output} = await prompt(input, { model: googleAI.model('gemini-1.5-flash-latest') });
     return output!;
   }
 );

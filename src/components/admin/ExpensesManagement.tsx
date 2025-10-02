@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, deleteDoc, serverTimestamp, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, serverTimestamp, addDoc, getDocs } from 'firebase/firestore';
 import type { ExpenseItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -36,6 +36,20 @@ const formatRupiah = (price?: number) => {
     }).format(price);
 };
 
+const sampleExpenses: Omit<ExpenseItem, 'id' | 'date'>[] = [
+    { name: "Gaji Karyawan", amount: 15000000 },
+    { name: "Listrik", amount: 2500000 },
+    { name: "Sewa Tempat", amount: 5000000 },
+    { name: "Air (PDAM)", amount: 500000 },
+    { name: "Langganan Internet", amount: 750000 },
+    { name: "Gas", amount: 1000000 },
+    { name: "Langganan Software (POS)", amount: 500000 },
+    { name: "Biaya Kebersihan & Keamanan", amount: 300000 },
+    { name: "Pemasaran & Promosi", amount: 1500000 },
+    { name: "Asuransi", amount: 400000 },
+];
+
+
 export function ExpensesManagement() {
   const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +58,26 @@ export function ExpensesManagement() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const seedExpenses = async () => {
+        const expensesCollection = collection(db, 'expenses');
+        const snapshot = await getDocs(expensesCollection);
+        if (snapshot.empty) {
+            console.log("No expenses found, seeding initial data...");
+            for (const expenseData of sampleExpenses) {
+                await addDoc(expensesCollection, { 
+                    ...expenseData,
+                    date: new Date(new Date().getFullYear(), new Date().getMonth(), 1) // Set to the first day of the current month
+                });
+            }
+            toast({
+                title: "Data Beban Ditambahkan",
+                description: "Beberapa contoh data beban bulanan telah ditambahkan.",
+            });
+        }
+    };
+
+    seedExpenses();
+
     const unsubscribe = onSnapshot(collection(db, 'expenses'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseItem));
       items.sort((a, b) => b.date.toMillis() - a.date.toMillis());

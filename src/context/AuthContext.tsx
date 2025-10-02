@@ -8,19 +8,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import type { CompanyInfo, LandingPageContent } from '@/lib/types';
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
-
-// Function to transform Google Drive URL
-export const transformGoogleDriveUrl = (url: string): string => {
-    if (!url || !url.includes('drive.google.com')) {
-        return url;
-    }
-    const match = url.match(/file\/d\/([^/]+)/);
-    if (match && match[1]) {
-        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-    return url;
-};
 
 interface AuthContextType {
   user: User | null;

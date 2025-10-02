@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { Home, Utensils, BookUser, Archive, Calculator, BarChart3, Receipt, LayoutDashboard, LogOut, CircleDollarSign, MoreHorizontal, ShoppingCart, Users, Settings, HandPlatter, FileSearch, User, Lock, ChevronDown, Banknote, CreditCard, Menu, MessageSquare, Presentation } from 'lucide-react';
+import { Home, Utensils, BookUser, Archive, Calculator, BarChart3, Receipt, LayoutDashboard, LogOut, CircleDollarSign, MoreHorizontal, ShoppingCart, Users, Settings, HandPlatter, FileSearch, User, Lock, ChevronDown, Banknote, CreditCard, Menu, MessageSquare, Presentation, Coffee } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '../ui/dropdown-menu';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ProfileManagement } from './ProfileManagement';
 
 interface AdminHeaderProps {
+  title?: string;
   showKitchenLink?: boolean;
   showAccountingLink?: boolean;
   showInventoryLink?: boolean;
@@ -20,7 +21,7 @@ interface AdminHeaderProps {
   showCashierName?: boolean;
 }
 
-export function AdminHeader({ showKitchenLink = true, showAccountingLink = true, showInventoryLink = true, showFoodCostLink = true, showCashierLink = true, showCashierName = false }: AdminHeaderProps) {
+export function AdminHeader({ title, showKitchenLink = true, showAccountingLink = true, showInventoryLink = true, showFoodCostLink = true, showCashierLink = true, showCashierName = false }: AdminHeaderProps) {
   const { user, logout, ersLogoUrl, companyName, websiteVersion } = useAuth();
   const router = useRouter();
 
@@ -38,7 +39,7 @@ export function AdminHeader({ showKitchenLink = true, showAccountingLink = true,
     <Dialog>
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Link href="/ers/cafe/admin" className="flex items-center gap-2 ml-2">
               {ersLogoUrl && (
                   <Image src={ersLogoUrl} alt="ERS logo" width={32} height={32} className="h-8 w-8 object-contain" />
@@ -50,6 +51,12 @@ export function AdminHeader({ showKitchenLink = true, showAccountingLink = true,
                   )}
               </div>
             </Link>
+            {title && (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="h-6 w-[1px] bg-border" />
+                <h2 className="text-lg font-semibold text-muted-foreground">{title}</h2>
+              </div>
+            )}
           </div>
 
           {showCashierName && cashierName && (
@@ -77,7 +84,7 @@ export function AdminHeader({ showKitchenLink = true, showAccountingLink = true,
                           Halaman Kasir
                       </Link>
                   </DropdownMenuItem>
-                   <DropdownMenuItem asChild>
+                  <DropdownMenuItem asChild>
                       <Link href="/ers/cafe/admin/menu" className="flex items-center">
                           <Menu className="mr-2 h-4 w-4" />
                           Menu
@@ -177,6 +184,12 @@ export function AdminHeader({ showKitchenLink = true, showAccountingLink = true,
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                   <DropdownMenuItem asChild>
+                      <Link href="/ers/cafe/admin/barista" className="flex items-center">
+                        <Coffee className="mr-2 h-4 w-4" />
+                        Barista
+                      </Link>
+                    </DropdownMenuItem>
                   {showKitchenLink && (
                     <DropdownMenuItem asChild>
                       <Link href="/ers/cafe/admin/kitchen" className="flex items-center">

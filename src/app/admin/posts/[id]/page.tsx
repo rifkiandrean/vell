@@ -12,7 +12,7 @@ function EditPostPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ErsAdminHeader />
+      <ErsAdminHeader title="Edit Post" />
       <main className="container mx-auto px-4 py-8">
         <PostForm postId={id as string} />
       </main>

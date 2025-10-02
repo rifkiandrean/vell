@@ -558,13 +558,13 @@ export function POForm({ poId }: POFormProps) {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    <Button type="button" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange('Ordered')}>
+                    <Button type="button" onClick={() => handleStatusChange('Ordered')}>
                         <ThumbsUp className="mr-2 h-4 w-4"/> Setujui & Kirim ke Keuangan
                     </Button>
                 </div>
             )}
              {showCompleteButton && (
-                <Button type="button" onClick={handleCompletePO} className="bg-green-600 hover:bg-green-700">
+                <Button type="button" onClick={handleCompletePO}>
                     Tandai Barang Diterima & Tambah Stok
                 </Button>
             )}

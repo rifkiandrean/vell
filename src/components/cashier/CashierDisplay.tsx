@@ -10,9 +10,11 @@ import { CashierMenu } from './CashierMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PendingPayments } from './PendingPayments';
+import { CompletedOrders } from './CompletedOrders'; // Import the new component
 import { useNotifications } from '@/hooks/use-notifications';
 import { useSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 
 interface OrderWithId extends OrderData {
@@ -37,6 +39,7 @@ export function CashierDisplay() {
     const [pendingOrders, setPendingOrders] = useState<OrderWithId[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const prevOrderCountRef = useRef(0);
+    const [isBlinking, setIsBlinking] = useState(false);
     const { requestPermission, showNotification } = useNotifications();
     const { playSound } = useSettings();
     const { user } = useAuth();
@@ -62,6 +65,8 @@ export function CashierDisplay() {
             // Play notification sound and show notification if a new order arrives
             if (!isLoading && orders.length > prevOrderCountRef.current) {
                 playSound();
+                setIsBlinking(true);
+                setTimeout(() => setIsBlinking(false), 3000); // Blink for 3 seconds
                 const newOrder = orders[orders.length - 1]; // Assuming the newest is last
                 if (newOrder) {
                     showNotification(
@@ -92,20 +97,24 @@ export function CashierDisplay() {
                 </div>
             )}
             <Tabs defaultValue="pending" className="h-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="pending">
                         Pembayaran Tertunda
                         {pendingOrders.length > 0 && (
-                            <Badge className="ml-2">{pendingOrders.length}</Badge>
+                            <Badge className={cn("ml-2", isBlinking && "animate-pulse-fast")}>{pendingOrders.length}</Badge>
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="new">Pesanan Baru (POS)</TabsTrigger>
+                    <TabsTrigger value="completed">Pesanan Selesai</TabsTrigger>
                 </TabsList>
                 <TabsContent value="pending" className="mt-4">
                     <PendingPayments pendingOrders={pendingOrders} isLoading={isLoading} />
                 </TabsContent>
                 <TabsContent value="new" className="mt-4">
                     <NewOrder />
+                </TabsContent>
+                <TabsContent value="completed" className="mt-4">
+                    <CompletedOrders />
                 </TabsContent>
             </Tabs>
         </>

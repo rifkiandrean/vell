@@ -10,7 +10,7 @@ function CashierPage() {
   return (
     <OrderProvider>
       <div className="flex flex-col min-h-screen bg-muted/40">
-        <AdminHeader showCashierLink={false} showCashierName={true} />
+        <AdminHeader title="Kasir" showCashierLink={true} showCashierName={true} />
         <main className="flex-1 p-4 lg:p-6">
           <CashierDisplay />
         </main>
@@ -20,3 +20,4 @@ function CashierPage() {
 }
 
 export default withAuth(CashierPage);
+

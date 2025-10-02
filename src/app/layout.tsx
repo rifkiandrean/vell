@@ -10,6 +10,7 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { LandingPageContent } from '@/lib/types';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 async function getWebsiteSettings(): Promise<{title: string, vellLogoUrl?: string}> {
@@ -20,13 +21,13 @@ async function getWebsiteSettings(): Promise<{title: string, vellLogoUrl?: strin
             const data = docSnap.data() as LandingPageContent;
             return {
                 title: data.websiteTitle || "VELL - Elektronik Restoran Sistem",
-                vellLogoUrl: data.vellLogoUrl || ""
+                vellLogoUrl: data.vellLogoUrl ? transformGoogleDriveUrl(data.vellLogoUrl) : "/favicon.ico"
             };
         }
     } catch (error) {
         console.error("Error fetching website title:", error);
     }
-    return { title: "VELL - Elektronik Restoran Sistem" };
+    return { title: "VELL - Elektronik Restoran Sistem", vellLogoUrl: '/favicon.ico' };
 }
 
 export async function generateMetadata(): Promise<Metadata> {

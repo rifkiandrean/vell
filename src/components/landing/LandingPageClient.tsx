@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Mountain, Utensils, Laptop, Heart, Newspaper, HelpCircle, Check, X } from 'lucide-react';
+import { Mountain, Utensils, Laptop, Heart, Newspaper, HelpCircle, Check, X, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { LandingPageContent, Post, HeroSlide, PricingPackage } from '@/lib/types';
@@ -16,6 +16,7 @@ import { useAuth } from '@/context/AuthContext';
 import * as LucideIcons from 'lucide-react';
 import { Icons } from '../icons';
 import { cn } from '@/lib/utils';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 // Create a client-side compatible Post type where Timestamps are strings
 export type ClientPost = Omit<Post, 'createdAt' | 'updatedAt'> & {
@@ -33,13 +34,18 @@ interface LandingPageClientProps {
 
 export function LandingPageClient({ content, posts, heroSlides, pricingPackages }: LandingPageClientProps) {
 
-  const { transformGoogleDriveUrl } = useAuth();
-
-  const product1ImageUrl = content.product1ImageUrl ? transformGoogleDriveUrl(content.product1ImageUrl) : "https://picsum.photos/seed/badia-kopi/600/400";
-  const product2ImageUrl = content.product2ImageUrl ? transformGoogleDriveUrl(content.product2ImageUrl) : "https://picsum.photos/seed/wedding-invitation/600/400";
+  const product1IconUrl = content.product1IconUrl ? transformGoogleDriveUrl(content.product1IconUrl) : null;
+  const product2IconUrl = content.product2IconUrl ? transformGoogleDriveUrl(content.product2IconUrl) : null;
   const vellLogoUrl = content.vellLogoUrl ? transformGoogleDriveUrl(content.vellLogoUrl) : null;
   
   const packageColors = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
+
+  const socialLinks = [
+    { name: 'Instagram', url: content.instagramUrl, iconUrl: content.instagramIconUrl },
+    { name: 'TikTok', url: content.tiktokUrl, iconUrl: content.tiktokIconUrl },
+    { name: 'Facebook', url: content.facebookUrl, iconUrl: content.facebookIconUrl },
+    { name: 'Twitter', url: content.twitterUrl, iconUrl: content.twitterIconUrl },
+  ].filter(link => link.url && link.iconUrl);
 
 
   return (
@@ -53,18 +59,27 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
           )}
           <span className="ml-2 text-xl font-bold tracking-tight text-black">{content.brandName || "VELL"}</span>
         </Link>
-        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-           <Link href="#products" className="text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md" prefetch={false}>
-            Produk
-          </Link>
-          <Link href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md" prefetch={false}>
-            Harga
-          </Link>
-          <Link href="#news" className="text-sm font-medium text-muted-foreground transition-colors hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md" prefetch={false}>
-            News
-          </Link>
+        <nav className="ml-auto flex items-center gap-2 sm:gap-4">
+           <Button variant="ghost" asChild>
+              <Link href="#products" prefetch={false}>
+                Produk
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="#pricing" prefetch={false}>
+                Harga
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="#news" prefetch={false}>
+                News
+              </Link>
+            </Button>
           <Link href="/admin/login" prefetch={false}>
-             <Button className="bg-gray-700 text-white hover:bg-gray-800">Login</Button>
+             <Button variant="default" size="icon">
+                <LogIn className="h-5 w-5" />
+                <span className="sr-only">Login</span>
+             </Button>
           </Link>
         </nav>
       </header>
@@ -115,6 +130,12 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
 
         <section id="news" className="w-full py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">News</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Berita & Update Terbaru</h2>
+              </div>
+            </div>
             <Carousel
                 opts={{ align: "start", loop: posts.length > 3 }}
                 plugins={[ Autoplay({ delay: 4000, stopOnInteraction: true }) ]}
@@ -127,7 +148,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                           <Card className="overflow-hidden h-full flex flex-row items-center transition-all group-hover:shadow-lg p-3 gap-3">
                               <div className="relative aspect-square w-16 h-16 rounded-md overflow-hidden shrink-0">
                                   <Image
-                                      src={post.imageUrl || 'https://picsum.photos/seed/news/150/150'}
+                                      src={transformGoogleDriveUrl(post.imageUrl) || 'https://picsum.photos/seed/news/150/150'}
                                       alt={post.title}
                                       fill
                                       className="object-cover"
@@ -159,62 +180,58 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-8 py-12 lg:grid-cols-2 lg:gap-16">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="grid gap-2">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <Utensils className="h-6 w-6"/>
-                    {content.product1Title || "Sistem Restoran Digital"}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {content.product1Description || "Aplikasi manajemen kafe lengkap dengan pemesanan via QR, sistem kasir, monitor dapur, dan panel admin untuk manajemen stok, menu, serta laporan keuangan."}
-                  </p>
-                  <Link href={content.product1Link || "/cafe"} prefetch={false} className="mt-2">
-                    <Button variant="outline">Lihat Demo</Button>
-                  </Link>
-                </div>
+            <div className="mx-auto grid max-w-5xl items-start gap-8 py-12">
+              <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] items-center gap-8 md:gap-12">
+                  <div className="w-48 h-48 shrink-0 mx-auto">
+                    {product1IconUrl ? (
+                        <Image src={product1IconUrl} alt="Product 1 Icon" width={192} height={192} className="w-full h-full object-contain" />
+                    ) : (
+                        <Utensils className="w-full h-full text-primary"/>
+                    )}
+                  </div>
+                  <div className="grid gap-2 text-center md:text-left">
+                    <h3 className="text-2xl font-bold">{content.product1Title || "Sistem Restoran Digital"}</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto md:mx-0">
+                      {content.product1Description || "Aplikasi manajemen kafe lengkap dengan pemesanan via QR, sistem kasir, monitor dapur, dan panel admin untuk manajemen stok, menu, serta laporan keuangan."}
+                    </p>
+                    <div className="mt-4">
+                        <Link href={content.product1Link || "/cafe"} prefetch={false}>
+                            <Button variant="outline">Lihat Demo</Button>
+                        </Link>
+                    </div>
+                  </div>
               </div>
-              <img
-                src={product1ImageUrl}
-                width="600"
-                height="400"
-                alt={content.product1Title || "Sistem Restoran Digital"}
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full shadow-lg"
-                data-ai-hint="coffee shop"
-              />
             </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-8 py-12 lg:grid-cols-2 lg:gap-16">
-               <img
-                src={product2ImageUrl}
-                width="600"
-                height="400"
-                alt={content.product2Title || "Undangan Pernikahan Digital"}
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full shadow-lg lg:order-last"
-                data-ai-hint="wedding invitation"
-              />
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="grid gap-2">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <Heart className="h-6 w-6"/>
-                    {content.product2Title || "Undangan Pernikahan Digital"}
-                    </h3>
-                  <p className="text-muted-foreground">
-                    {content.product2Description || "Sistem undangan pernikahan digital modern dan interaktif. Fitur termasuk detail acara, galeri foto, cerita cinta, buku tamu digital, dan konfirmasi kehadiran (RSVP)."}
-                  </p>
-                  <Link href={content.product2Link || "/upd/hani"} prefetch={false} className="mt-2">
-                    <Button variant="outline">Lihat Contoh</Button>
-                  </Link>
+            <div className="mx-auto grid max-w-5xl items-start gap-8 py-12">
+               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-8 md:gap-12">
+                    <div className="grid gap-2 text-center md:text-left order-2 md:order-1">
+                        <h3 className="text-2xl font-bold">{content.product2Title || "Undangan Pernikahan Digital"}</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto md:mx-0">
+                            {content.product2Description || "Sistem undangan pernikahan digital modern dan interaktif. Fitur termasuk detail acara, galeri foto, cerita cinta, buku tamu digital, dan konfirmasi kehadiran (RSVP)."}
+                        </p>
+                         <div className="mt-4">
+                            <Link href={content.product2Link || "/upd/hani"} prefetch={false}>
+                                <Button variant="outline">Lihat Contoh</Button>
+                            </Link>
+                        </div>
+                    </div>
+                     <div className="w-48 h-48 shrink-0 mx-auto order-1 md:order-2">
+                        {product2IconUrl ? (
+                            <Image src={product2IconUrl} alt="Product 2 Icon" width={192} height={192} className="w-full h-full object-contain" />
+                        ) : (
+                            <Heart className="w-full h-full text-primary"/>
+                        )}
+                    </div>
                 </div>
-              </div>
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                 <div className="inline-block rounded-lg bg-background px-3 py-1 text-sm">Harga</div>
+                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Harga</div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Paket Harga yang Transparan</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                     Pilih paket yang paling sesuai dengan kebutuhan Anda.
@@ -235,7 +252,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
 
 
                 return (
-                    <Card key={pkg.id} className={cn("flex flex-col", isPopular ? "border-2 border-primary shadow-lg" : "border-transparent")}>
+                    <Card key={pkg.id} className={cn("flex flex-col", isPopular ? "border-2 border-primary shadow-lg" : "")}>
                     {isPopular && (
                         <div className="bg-primary text-primary-foreground text-sm font-semibold text-center py-1 rounded-t-lg">
                         Paling Populer
@@ -243,7 +260,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                     )}
                     <CardHeader className="items-center text-center">
                         <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
-                        <div className="text-4xl font-bold" style={cardStyle}>
+                        <div className="text-4xl font-bold text-primary">
                             {formattedPrice}
                         </div>
                         <p className="text-sm text-muted-foreground">{pkg.pricePeriod}</p>
@@ -258,14 +275,14 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                                     {isExcluded ? (
                                         <X className="h-5 w-5 text-muted-foreground/50 mt-px flex-shrink-0" />
                                     ) : (
-                                        <Check className="h-5 w-5 mt-px flex-shrink-0" style={cardStyle} />
+                                        <Check className="h-5 w-5 mt-px flex-shrink-0 text-primary" />
                                     )}
                                     <span className="text-foreground">{featureText}</span>
                                 </li>
                             )
                         })}
                         </ul>
-                         <Button asChild style={cardStyle} className="text-white">
+                         <Button asChild className="bg-primary text-primary-foreground">
                             <Link href={whatsappUrl} target="_blank">Pilih Paket</Link>
                         </Button>
                     </CardContent>
@@ -277,17 +294,29 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
         </section>
 
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
+      <footer className="flex flex-col gap-4 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-muted-foreground">&copy; 2024 {content.brandName || "VELL"}. Semua Hak Cipta Dilindungi.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Syarat & Ketentuan
-          </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Kebijakan Privasi
-          </Link>
+        <nav className="sm:ml-auto flex items-center gap-4 sm:gap-6">
+            {socialLinks.map((link) => (
+                <Link key={link.name} href={link.url!} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+                    <Image
+                        src={transformGoogleDriveUrl(link.iconUrl!)}
+                        alt={`${link.name} icon`}
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 object-contain"
+                    />
+                </Link>
+            ))}
+             <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+                Syarat & Ketentuan
+            </Link>
+            <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+                Kebijakan Privasi
+            </Link>
         </nav>
       </footer>
     </div>
   );
 }
+

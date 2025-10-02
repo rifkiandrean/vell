@@ -55,12 +55,37 @@ export function PendingPayments({ pendingOrders, isLoading }: PendingPaymentsPro
     const { user } = useAuth();
     const [selectedOrder, setSelectedOrder] = useState<OrderWithId | null>(null);
     const [timeRenders, setTimeRenders] = useState({}); // Used to force re-render for time display
+    const [justArrived, setJustArrived] = useState<Set<string>>(new Set());
     const { toast } = useToast();
     
     // State for the payment confirmation step
     const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
     const [paidAmount, setPaidAmount] = useState<number | string>('');
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
+
+     // Effect to handle newly arrived orders for blinking animation
+    useEffect(() => {
+        setJustArrived(prevJustArrived => {
+            const currentOrderIds = new Set(pendingOrders.map(o => o.id));
+            const newOrders = pendingOrders.filter(o => !prevJustArrived.has(o.id) && !selectedOrder); // Avoid blinking on initial load
+            const newArrivedIds = new Set(newOrders.map(o => o.id));
+
+            if (newArrivedIds.size > 0) {
+                 newArrivedIds.forEach(id => {
+                    setTimeout(() => {
+                        setJustArrived(prev => {
+                            const newSet = new Set(prev);
+                            newSet.delete(id);
+                            return newSet;
+                        });
+                    }, 3000); // Blink for 3 seconds
+                });
+                return new Set([...Array.from(prevJustArrived), ...Array.from(newArrivedIds)]);
+            }
+            return prevJustArrived;
+        });
+
+    }, [pendingOrders, selectedOrder]);
 
 
     // Auto-cancellation and time update effect
@@ -216,12 +241,14 @@ export function PendingPayments({ pendingOrders, isLoading }: PendingPaymentsPro
                         {pendingOrders.map(order => {
                             const timeLeft = getTimeLeft(order.createdAt);
                             const isOverdue = timeLeft === "Melebihi batas";
+                            const isBlinking = justArrived.has(order.id);
                             return (
                                 <button
                                     key={order.id}
                                     onClick={() => setSelectedOrder(order)}
                                     className={cn(
                                         "w-full text-left p-3 rounded-md border transition-colors",
+                                        isBlinking ? "animate-pulse-fast" : "",
                                         selectedOrder?.id === order.id
                                             ? "bg-primary text-primary-foreground shadow-md"
                                             : "bg-muted/50 hover:bg-muted"
@@ -348,7 +375,7 @@ export function PendingPayments({ pendingOrders, isLoading }: PendingPaymentsPro
                                         <Button 
                                             onClick={() => handleConfirmPayment(selectedOrder.id, paymentMethod)}
                                             size="lg" 
-                                            className="w-full bg-green-600 hover:bg-green-700 text-white text-lg"
+                                            className="w-full text-white text-lg"
                                             disabled={changeAmount < 0}
                                         >
                                             <CheckCircle2 className="mr-3 h-6 w-6" /> Selesaikan Pembayaran

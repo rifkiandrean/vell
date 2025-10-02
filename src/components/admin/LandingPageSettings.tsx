@@ -207,13 +207,22 @@ const landingPageSchema = z.object({
 
   product1Title: z.string().optional(),
   product1Description: z.string().optional(),
-  product1ImageUrl: z.string().url("URL gambar tidak valid").or(z.literal('')).optional(),
+  product1IconUrl: z.string().url("URL ikon tidak valid").or(z.literal('')).optional(),
   product1Link: z.string().url("URL link tidak valid").or(z.literal('')).optional(),
   
   product2Title: z.string().optional(),
   product2Description: z.string().optional(),
-  product2ImageUrl: z.string().url("URL gambar tidak valid").or(z.literal('')).optional(),
+  product2IconUrl: z.string().url("URL ikon tidak valid").or(z.literal('')).optional(),
   product2Link: z.string().url("URL link tidak valid").or(z.literal('')).optional(),
+  
+  instagramUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  tiktokUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  facebookUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  twitterUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  instagramIconUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  tiktokIconUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  facebookIconUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
+  twitterIconUrl: z.string().url("URL tidak valid").or(z.literal('')).optional(),
 });
 
 type LandingPageFormValues = z.infer<typeof landingPageSchema>;
@@ -239,12 +248,20 @@ export function LandingPageSettings() {
       productsSectionSubtitle: "",
       product1Title: "",
       product1Description: "",
-      product1ImageUrl: "",
+      product1IconUrl: "",
       product1Link: "",
       product2Title: "",
       product2Description: "",
-      product2ImageUrl: "",
+      product2IconUrl: "",
       product2Link: "",
+      instagramUrl: "",
+      tiktokUrl: "",
+      facebookUrl: "",
+      twitterUrl: "",
+      instagramIconUrl: "",
+      tiktokIconUrl: "",
+      facebookIconUrl: "",
+      twitterIconUrl: "",
     },
   });
 
@@ -547,11 +564,11 @@ export function LandingPageSettings() {
                   <FormField control={form.control} name="product1Title" render={({ field }) => (
                     <FormItem><FormLabel>Judul</FormLabel><FormControl><Input placeholder="Sistem Restoran Digital" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                   <FormField control={form.control} name="product1IconUrl" render={({ field }) => (
+                    <FormItem><FormLabel>URL Ikon Produk 1 (PNG)</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
                   <FormField control={form.control} name="product1Description" render={({ field }) => (
                     <FormItem><FormLabel>Deskripsi</FormLabel><FormControl><Textarea placeholder="Aplikasi manajemen kafe lengkap..." {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="product1ImageUrl" render={({ field }) => (
-                    <FormItem><FormLabel>URL Gambar</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="product1Link" render={({ field }) => (
                     <FormItem><FormLabel>Tautan Demo</FormLabel><FormControl><Input placeholder="/cafe" {...field} /></FormControl><FormMessage /></FormItem>
@@ -563,11 +580,11 @@ export function LandingPageSettings() {
                   <FormField control={form.control} name="product2Title" render={({ field }) => (
                     <FormItem><FormLabel>Judul</FormLabel><FormControl><Input placeholder="Undangan Pernikahan Digital" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                  <FormField control={form.control} name="product2IconUrl" render={({ field }) => (
+                    <FormItem><FormLabel>URL Ikon Produk 2 (PNG)</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
                   <FormField control={form.control} name="product2Description" render={({ field }) => (
                     <FormItem><FormLabel>Deskripsi</FormLabel><FormControl><Textarea placeholder="Sistem undangan pernikahan digital modern..." {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="product2ImageUrl" render={({ field }) => (
-                    <FormItem><FormLabel>URL Gambar</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="product2Link" render={({ field }) => (
                     <FormItem><FormLabel>Tautan Contoh</FormLabel><FormControl><Input placeholder="/upd/hani" {...field} /></FormControl><FormMessage /></FormItem>
@@ -575,6 +592,51 @@ export function LandingPageSettings() {
 
               </CardContent>
             </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Pengaturan Media Sosial</CardTitle>
+                    <CardDescription>Atur link profil dan ikon media sosial yang akan tampil di footer.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {/* Instagram */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                        <FormField control={form.control} name="instagramUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="instagramIconUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Ikon Instagram (PNG)</FormLabel><FormControl><Input placeholder="Link Google Drive..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                    {/* TikTok */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                        <FormField control={form.control} name="tiktokUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL TikTok</FormLabel><FormControl><Input placeholder="https://tiktok.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="tiktokIconUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Ikon TikTok (PNG)</FormLabel><FormControl><Input placeholder="Link Google Drive..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                    {/* Facebook */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                        <FormField control={form.control} name="facebookUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Facebook</FormLabel><FormControl><Input placeholder="https://facebook.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="facebookIconUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Ikon Facebook (PNG)</FormLabel><FormControl><Input placeholder="Link Google Drive..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                    {/* Twitter */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+                        <FormField control={form.control} name="twitterUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Twitter</FormLabel><FormControl><Input placeholder="https://twitter.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="twitterIconUrl" render={({ field }) => (
+                            <FormItem><FormLabel>URL Ikon Twitter (PNG)</FormLabel><FormControl><Input placeholder="Link Google Drive..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                </CardContent>
+             </Card>
 
             <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan Semua Perubahan'}

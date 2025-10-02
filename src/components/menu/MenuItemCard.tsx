@@ -9,7 +9,7 @@ import { CustomizationDialog } from './CustomizationDialog';
 import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useAuth } from '@/context/AuthContext';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 interface MenuItemCardProps {
   menuItem: MenuItem;
@@ -35,7 +35,6 @@ const isValidUrl = (urlString: string) => {
 
 export function MenuItemCard({ menuItem }: MenuItemCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { transformGoogleDriveUrl } = useAuth();
   
   let imageUrl = menuItem.image;
   if (!isValidUrl(imageUrl)) {

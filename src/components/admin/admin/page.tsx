@@ -77,6 +77,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 // --- Data Types ---
@@ -289,7 +290,6 @@ function ModerationContent({
               </Button>
               <Button
                 size="sm"
-                className="bg-green-600 hover:bg-green-700"
                 onClick={() => onApprove(msg.id, msg.name)}
               >
                 <Check className="h-4 w-4 md:mr-2" />
@@ -636,7 +636,7 @@ function SettingsContent({
 
 // --- Gallery Tab Component ---
 function GalleryContent() {
-    const { user, transformGoogleDriveUrl } = useAuth();
+    const { user } = useAuth();
     const { toast } = useToast();
     const [images, setImages] = useState<GalleryImage[]>([]);
     const [isLoading, setIsLoading] = useState(true);

@@ -67,7 +67,7 @@ function PostsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ErsAdminHeader />
+      <ErsAdminHeader title="Manajemen Post" />
       <main className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

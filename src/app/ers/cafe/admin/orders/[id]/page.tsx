@@ -12,7 +12,7 @@ function EditPOPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AdminHeader />
+      <AdminHeader title={`Detail PO #${id as string}`} />
       <main className="container mx-auto px-4 py-8">
         <POForm poId={id as string} />
       </main>

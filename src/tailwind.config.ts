@@ -83,12 +83,24 @@ export default {
             height: '0',
           },
         },
+        'pulse-once': {
+          '0%, 100%': { borderColor: 'hsl(var(--primary))' },
+          '50%': { borderColor: 'hsl(var(--primary) / 0.3)' },
+        },
+        'pulse-fast': {
+          '0%, 100%': { backgroundColor: 'hsl(var(--muted-foreground) / 0.2)' },
+          '50%': { backgroundColor: 'hsl(var(--primary) / 0.2)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'pulse-once': 'pulse-once 1s ease-in-out 5',
+        'pulse-fast': 'pulse-fast 1s ease-in-out 3',
       },
     },
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    

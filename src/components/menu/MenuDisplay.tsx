@@ -16,9 +16,9 @@ import { Skeleton } from '../ui/skeleton';
 import { HelpCircle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 const getIconComponent = (iconName: string, fallback: React.ElementType = HelpCircle): React.ElementType => {
@@ -103,7 +103,6 @@ interface MenuDisplayProps {
 export function MenuDisplay({ shopStatus }: MenuDisplayProps) {
   const [promoSlides, setPromoSlides] = React.useState<PromoSlide[]>([]);
   const [promoSettings, setPromoSettings] = React.useState<PromoSettings>({});
-  const { transformGoogleDriveUrl } = useAuth();
   
   React.useEffect(() => {
     const unsubSettings = onSnapshot(doc(db, "settings", "promoSettings"), (docSnap) => {

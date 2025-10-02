@@ -30,6 +30,7 @@ import { Input } from '../ui/input';
 import * as XLSX from 'xlsx';
 import { useAuth } from '@/context/AuthContext';
 import { logActivity } from '@/lib/activity-log';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 const isValidUrl = (urlString: string) => {
   try {
@@ -117,16 +118,19 @@ const BulkImportDialog = ({ onImportSuccess }: { onImportSuccess: () => void }) 
 
                 const batch = writeBatch(db);
                 let count = 0;
+                let skippedCount = 0;
 
                 json.forEach((row, index) => {
-                    if (!row.name || !row.description || !row.price || !row.category) {
+                    if (!row.name || !row.description || row.price == null || !row.category) {
                         console.warn(`Melewatkan baris ${index + 2}: Data tidak lengkap.`);
+                        skippedCount++;
                         return;
                     }
 
                     const category = row.category.trim();
                     if (!validCategories.includes(category)) {
                          console.warn(`Melewatkan baris ${index + 2}: Kategori '${category}' tidak valid.`);
+                         skippedCount++;
                          return;
                     }
                     
@@ -158,7 +162,7 @@ const BulkImportDialog = ({ onImportSuccess }: { onImportSuccess: () => void }) 
 
                 await batch.commit();
                 logActivity(user, `Mengimpor ${count} produk baru dari file Excel.`);
-                toast({ title: "Impor Berhasil!", description: `${count} produk baru telah ditambahkan.` });
+                toast({ title: "Impor Berhasil!", description: `${count} produk baru ditambahkan. ${skippedCount > 0 ? `${skippedCount} baris dilewati.` : ''}` });
                 onImportSuccess(); // Closes the dialog
             } catch (error: any) {
                  toast({
@@ -193,6 +197,7 @@ const BulkImportDialog = ({ onImportSuccess }: { onImportSuccess: () => void }) 
                     type="file"
                     accept=".xlsx, .xls"
                     onChange={handleFileChange}
+                    disabled={isImporting}
                 />
                  {file && <p className="text-sm text-muted-foreground">File dipilih: {file.name}</p>}
             </div>
@@ -213,7 +218,7 @@ export function MenuManagement() {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | undefined>(undefined);
   const { toast } = useToast();
-  const { user, transformGoogleDriveUrl } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'menu'), (snapshot) => {
@@ -279,9 +284,7 @@ export function MenuManagement() {
             <CardHeader className="flex flex-row items-center justify-between gap-2">
               <CardTitle>Daftar Menu</CardTitle>
               <div className="flex gap-2">
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Impor dari Excel</Button>
-                  </DialogTrigger>
+                  <Button variant="outline" onClick={() => setIsBulkImportOpen(true)}>Impor dari Excel</Button>
                   <Button onClick={handleAddNewClick}>Tambah Produk Baru</Button>
               </div>
             </CardHeader>

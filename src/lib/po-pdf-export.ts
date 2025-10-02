@@ -1,9 +1,10 @@
 
+
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { transformGoogleDriveUrl } from '@/context/AuthContext';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 import type { PurchaseOrder, Vendor, CompanyInfo } from './types';
 
 // Extend jsPDF type to include autoTable

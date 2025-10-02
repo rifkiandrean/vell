@@ -69,6 +69,8 @@ export type OrderData = {
   customerName?: string;
   whatsappNumber?: string;
   paymentMethod?: PaymentMethod;
+  itemsPreparedByKitchen?: string[]; // Array of item names
+  itemsPreparedByBarista?: string[]; // Array of item names
 };
 
 export type InventoryItem = {
@@ -213,6 +215,8 @@ export type WeddingInfo = {
     groomName: string;
     brideBio: string;
     groomBio: string;
+    brideStoryUrl?: string;
+    groomStoryUrl?: string;
     ceremonyDate: string;
     ceremonyTime: string;
     ceremonyLocation: string;
@@ -265,13 +269,22 @@ export type LandingPageContent = {
   
   product1Title?: string;
   product1Description?: string;
-  product1ImageUrl?: string;
+  product1IconUrl?: string;
   product1Link?: string;
 
   product2Title?: string;
   product2Description?: string;
-  product2ImageUrl?: string;
+  product2IconUrl?: string;
   product2Link?: string;
+  
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramIconUrl?: string;
+  tiktokIconUrl?: string;
+  facebookIconUrl?: string;
+  twitterIconUrl?: string;
 };
 
 // --- VELL Post Types ---
@@ -285,4 +298,3 @@ export type Post = {
   createdAt: any; // Firestore Timestamp
   updatedAt: any; // Firestore Timestamp
 };
-    

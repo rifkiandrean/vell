@@ -9,7 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 const SendAuditReportInputSchema = z.object({
@@ -73,7 +73,7 @@ const sendAuditReportFlow = ai.defineFlow(
     outputSchema: SendAuditReportOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { model: googleAI.model('gemini-pro') });
+    const {output} = await prompt(input, { model: googleAI.model('gemini-1.5-flash-latest') });
     return output!;
   }
 );

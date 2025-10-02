@@ -1,4 +1,5 @@
 
+
 import type {Metadata} from 'next';
 import '../../globals.css';
 import { db } from '@/lib/firebase';
@@ -18,6 +19,8 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 groomName: data.groomName || 'Mempelai Pria',
                 brideBio: data.brideBio || '',
                 groomBio: data.groomBio || '',
+                brideStoryUrl: data.brideStoryUrl || '',
+                groomStoryUrl: data.groomStoryUrl || '',
                 ceremonyDate: data.ceremonyDate || '',
                 ceremonyTime: data.ceremonyTime || '',
                 ceremonyLocation: data.ceremonyLocation || '',
@@ -43,6 +46,8 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         groomName: "Pria",
         brideBio: "",
         groomBio: "",
+        brideStoryUrl: "",
+        groomStoryUrl: "",
         ceremonyDate: "Segera Hadir",
         ceremonyTime: "",
         ceremonyLocation: "",

@@ -8,7 +8,7 @@ import { withAuth } from '@/context/AuthContext';
 function WaiterPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AdminHeader />
+      <AdminHeader title="Tampilan Pelayan" />
       <main className="container mx-auto px-4 py-8">
         <WaiterDisplay />
       </main>

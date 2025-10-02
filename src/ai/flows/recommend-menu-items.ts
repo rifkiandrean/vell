@@ -9,7 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 export const RecommendMenuItemsInputSchema = z.object({
@@ -53,7 +53,7 @@ const recommendMenuItemsFlow = ai.defineFlow(
     outputSchema: RecommendMenuItemsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { model: googleAI.model('gemini-pro') });
+    const {output} = await prompt(input, { model: googleAI.model('gemini-1.5-flash-latest') });
     return output!;
   }
 );

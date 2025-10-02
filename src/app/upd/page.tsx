@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, doc, onSnapshot, getDoc } from 'firebase/firestore';
 import type { WeddingInfo } from '@/lib/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -222,6 +222,9 @@ function UpdListPage() {
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Buat Undangan Baru</DialogTitle>
+                <DialogDescription>
+                    Buat salinan baru dari template undangan yang sudah ada.
+                </DialogDescription>
             </DialogHeader>
             <CreateInvitationForm onInvitationCreated={() => setIsFormOpen(false)} />
         </DialogContent>

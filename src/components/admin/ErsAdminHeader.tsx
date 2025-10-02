@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from 'next/link';
@@ -13,9 +14,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ProfileManagement } from './ProfileManagement';
 import { Mountain } from 'lucide-react';
 
+interface ErsAdminHeaderProps {
+  title?: string;
+}
 
-export function ErsAdminHeader() {
-  const { user, logout, vellLogoUrl, websiteVersion, transformGoogleDriveUrl } = useAuth();
+export function ErsAdminHeader({ title }: ErsAdminHeaderProps) {
+  const { user, logout, vellLogoUrl } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -26,13 +30,13 @@ export function ErsAdminHeader() {
     router.push('/admin/login');
   };
   
-  const logoUrl = vellLogoUrl ? transformGoogleDriveUrl(vellLogoUrl) : null;
+  const logoUrl = vellLogoUrl;
 
   return (
     <Dialog>
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Link href="/admin" className="flex items-center gap-2 ml-2">
               {logoUrl && (
                   <Image src={logoUrl} alt="VELL logo" width={32} height={32} className="h-8 w-8 object-contain" />
@@ -41,6 +45,12 @@ export function ErsAdminHeader() {
                   <h1 className="text-2xl font-bold tracking-tighter text-black">VELL</h1>
               </div>
             </Link>
+             {title && (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="h-6 w-[1px] bg-border" />
+                <h2 className="text-lg font-semibold text-muted-foreground">{title}</h2>
+              </div>
+            )}
           </div>
 
           <nav className="flex items-center gap-1 md:gap-2">

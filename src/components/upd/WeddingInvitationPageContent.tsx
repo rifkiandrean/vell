@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply, Home, GalleryHorizontal, Music, VolumeX } from 'lucide-react';
+import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply, Home, GalleryHorizontal, Music, VolumeX, X } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +21,9 @@ import { id } from 'date-fns/locale';
 import Link from 'next/link';
 import type { WeddingInfo, GalleryImage } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
+
 
 interface GuestbookMessage {
     id: string;
@@ -129,9 +132,39 @@ function FloatingNav({ onScroll, onToggleMusic, isMusicPlaying }: { onScroll: (i
   );
 }
 
+function StoryViewer({ videoUrl, onClose }: { videoUrl: string | null; onClose: () => void }) {
+    if (!videoUrl) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+            onClick={onClose}
+        >
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full p-2"
+            >
+                <X className="h-6 w-6" />
+            </button>
+            <div className="relative w-full max-w-sm h-full max-h-[80vh] rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <video
+                    src={videoUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    controls
+                    playsInline
+                />
+            </div>
+        </motion.div>
+    );
+}
+
 export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWeddingInfo: WeddingInfo }) {
   const { toast } = useToast();
-  const { user, transformGoogleDriveUrl } = useAuth();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const guest = searchParams.get('tamu');
   const guestName = guest || 'Tamu Undangan';
@@ -146,6 +179,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
   const [weddingInfo, setWeddingInfo] = useState<WeddingInfo>(initialWeddingInfo);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [storyVideoUrl, setStoryVideoUrl] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -254,6 +288,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
     scrollToSection('couple');
   };
 
+  const handleShowStory = (videoUrl?: string) => {
+    if (videoUrl) {
+      setStoryVideoUrl(transformGoogleDriveUrl(videoUrl));
+    }
+  };
+
 
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -353,6 +393,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
             </motion.div>
         )}
       </AnimatePresence>
+      
+       <AnimatePresence>
+        {storyVideoUrl && (
+            <StoryViewer videoUrl={storyVideoUrl} onClose={() => setStoryVideoUrl(null)} />
+        )}
+      </AnimatePresence>
 
       <div id="main-invitation" className={isOpened ? 'block' : 'hidden'}>
         <main className="container mx-auto px-4 py-16 sm:py-24 space-y-24">
@@ -363,13 +409,27 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-4xl mx-auto">
                     <div className="flex flex-col items-center">
-                        <Image src="https://picsum.photos/seed/bride/400/400" alt="Bride" width={250} height={250} className="rounded-full shadow-lg mb-4" data-ai-hint="bride" />
-                        <h3 className="text-3xl font-bold" style={{ fontFamily: 'serif' }}>{weddingInfo.brideName}</h3>
+                        <button onClick={() => handleShowStory(weddingInfo.brideStoryUrl)} className="relative cursor-pointer group">
+                             <div className={cn("relative w-[250px] h-[250px] rounded-full p-1", weddingInfo.brideStoryUrl ? "bg-primary" : "bg-white")}>
+                                <Image src="https://picsum.photos/seed/bride/400/400" alt="Bride" width={250} height={250} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="bride" />
+                             </div>
+                             <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                                 {weddingInfo.brideStoryUrl && <p className="text-white opacity-0 group-hover:opacity-100 font-semibold">Lihat Story</p>}
+                             </div>
+                        </button>
+                        <h3 className="text-3xl font-bold mt-4" style={{ fontFamily: 'serif' }}>{weddingInfo.brideName}</h3>
                         <p className="text-muted-foreground mt-2">{weddingInfo.brideBio}</p>
                     </div>
                     <div className="flex flex-col items-center">
-                        <Image src="https://picsum.photos/seed/groom/400/400" alt="Groom" width={250} height={250} className="rounded-full shadow-lg mb-4" data-ai-hint="groom" />
-                        <h3 className="text-3xl font-bold" style={{ fontFamily: 'serif' }}>{weddingInfo.groomName}</h3>
+                         <button onClick={() => handleShowStory(weddingInfo.groomStoryUrl)} className="relative cursor-pointer group">
+                             <div className={cn("relative w-[250px] h-[250px] rounded-full p-1", weddingInfo.groomStoryUrl ? "bg-primary" : "bg-white")}>
+                                <Image src="https://picsum.photos/seed/groom/400/400" alt="Groom" width={250} height={250} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="groom" />
+                            </div>
+                            <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                                 {weddingInfo.groomStoryUrl && <p className="text-white opacity-0 group-hover:opacity-100 font-semibold">Lihat Story</p>}
+                             </div>
+                        </button>
+                        <h3 className="text-3xl font-bold mt-4" style={{ fontFamily: 'serif' }}>{weddingInfo.groomName}</h3>
                         <p className="text-muted-foreground mt-2">{weddingInfo.groomBio}</p>
                     </div>
                 </div>
