@@ -70,6 +70,7 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+     const [isClient, setIsClient] = React.useState(false);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -99,6 +100,7 @@ const SidebarProvider = React.forwardRef<
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
+      setIsClient(true);
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
           event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -129,6 +131,10 @@ const SidebarProvider = React.forwardRef<
       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
+
+    if (!isClient) {
+        return null;
+    }
 
     return (
       <SidebarContext.Provider value={contextValue}>

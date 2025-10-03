@@ -2,6 +2,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Mountain, Utensils, Laptop, Heart, Newspaper, HelpCircle, Check, X, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,11 @@ interface LandingPageClientProps {
 }
 
 export function LandingPageClient({ content, posts, heroSlides, pricingPackages }: LandingPageClientProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const product1IconUrl = content.product1IconUrl ? transformGoogleDriveUrl(content.product1IconUrl) : null;
   const product2IconUrl = content.product2IconUrl ? transformGoogleDriveUrl(content.product2IconUrl) : null;
@@ -100,7 +106,6 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                                     fill
                                     className="object-cover brightness-50"
                                     data-ai-hint={slide.imageHint}
-                                    priority={slide.order === 0}
                                 />
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
                                     <div className="max-w-3xl mx-auto">
@@ -157,7 +162,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                               <div className="flex flex-col">
                                   <h3 className="text-sm font-semibold leading-tight line-clamp-2">{post.title}</h3>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                      {format(new Date(post.createdAt), 'd MMM yyyy', { locale: id })}
+                                      {isClient ? format(new Date(post.createdAt), 'd MMM yyyy', { locale: id }) : '...'}
                                   </p>
                               </div>
                           </Card>
@@ -245,7 +250,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                 const isPopular = pkg.isPopular;
                 
                 const whatsappNumber = "6282115123431";
-                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(pkg.price);
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(pkg.price);
                 const message = `Hallo kak, Bolehkan saya memesan ${pkg.name} dengan harga ${formattedPrice} ?`;
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
@@ -261,7 +266,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                     <CardHeader className="items-center text-center">
                         <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
                         <div className="text-4xl font-bold text-primary">
-                            {formattedPrice}
+                          {isClient ? formattedPrice : '...'}
                         </div>
                         <p className="text-sm text-muted-foreground">{pkg.pricePeriod}</p>
                     </CardHeader>
@@ -319,4 +324,3 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
     </div>
   );
 }
-

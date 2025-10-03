@@ -1,5 +1,4 @@
 
-
 export type Spiciness = 'Mild' | 'Medium' | 'Hot' | 'Extra Hot';
 export type SugarLevel = 'Less Sugar' | 'Normal' | 'Extra Sugar';
 
@@ -231,6 +230,15 @@ export type WeddingInfo = {
     coverImageUrl?: string;
     storyTimeline?: StoryTimelineItem[];
     coverFont?: string;
+    coverOpeningImageUrl?: string;
+    brideCoverPhotoUrl?: string;
+    groomCoverPhotoUrl?: string;
+    flowerFrameTopLeftUrl?: string;
+    flowerFrameTopRightUrl?: string;
+    flowerFrameBottomLeftUrl?: string;
+    flowerFrameBottomRightUrl?: string;
+    innerFrameTopRightUrl?: string;
+    innerFrameBottomLeftUrl?: string;
 };
 
 export type GalleryImage = {

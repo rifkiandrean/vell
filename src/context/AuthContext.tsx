@@ -137,18 +137,18 @@ export function withAuth<P extends object>(WrappedComponent: React.ComponentType
         useEffect(() => {
             if (loading) return;
 
-            const isUpdAdminPath = pathname.startsWith('/upd/hani/admin') || pathname === '/upd';
+            const isUpdAdminPath = pathname.startsWith('/upd/') && pathname.includes('/admin');
             const isErsCafeAdminPath = pathname.startsWith('/ers/cafe/admin');
             const isAdminPath = pathname.startsWith('/admin');
 
-            const isUpdLoginPath = pathname === '/upd/hani/admin/login';
+            const isUpdLoginPath = isUpdAdminPath && pathname.endsWith('/login');
             const isErsCafeLoginPath = pathname === '/ers/cafe/admin/login';
             const isAdminLoginPath = pathname === '/admin/login';
 
-
             if (!user) {
                 if (isUpdAdminPath && !isUpdLoginPath) {
-                    router.replace('/upd/hani/admin/login');
+                    const invitationId = pathname.split('/')[2];
+                    router.replace(`/upd/${invitationId}/admin/login`);
                 } else if (isErsCafeAdminPath && !isErsCafeLoginPath) {
                     router.replace('/ers/cafe/admin/login');
                 } else if (isAdminPath && !isAdminLoginPath) {

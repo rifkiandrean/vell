@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -51,11 +50,16 @@ function GuestNameDisplay({ guest, fontStyle }: { guest: string | null; fontStyl
   }
 
   return (
-    <div className="mt-4 text-center">
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.8, duration: 0.7, ease: 'easeOut' }}
+      className="mt-4 text-center"
+    >
       <p className="text-lg md:text-xl">Kepada Yth. Bpk/Ibu/Saudara/i</p>
       <p className="text-2xl md:text-3xl font-bold mt-1" style={fontStyle}>{guest}</p>
       <p className="text-xs text-white/70 mt-2">Mohon maaf apabila ada kesalahan penulisan nama/gelar</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -199,14 +203,17 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
 
     if (guestName && guestName !== 'Tamu Undangan') {
         const checkStatus = async () => {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            const invitationId = pathSegments.length > 1 ? pathSegments[1] : 'hani'; // default for backward compatibility
+
             // Check RSVP status
-            const rsvpQuery = query(collection(db, "upd_rsvps"), where("name", "==", guestName));
+            const rsvpQuery = query(collection(db, `invitations/${invitationId}/rsvps`), where("name", "==", guestName));
             const rsvpSnapshot = await getDocs(rsvpQuery);
             if (!rsvpSnapshot.empty) {
                 setRsvpSubmitted(true);
             }
             // Check guestbook status
-            const guestbookQuery = query(collection(db, "upd_guestbook"), where("name", "==", guestName));
+            const guestbookQuery = query(collection(db, `invitations/${invitationId}/guestbook`), where("name", "==", guestName));
             const guestbookSnapshot = await getDocs(guestbookQuery);
             if (!guestbookSnapshot.empty) {
                 setGuestbookSubmitted(true);
@@ -217,9 +224,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
   }, [guestName]);
 
   useEffect(() => {
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const invitationId = pathSegments.length > 1 ? pathSegments[1] : 'hani';
+
     // Guestbook messages listener
     const qGuestbook = query(
-        collection(db, "upd_guestbook"), 
+        collection(db, `invitations/${invitationId}/guestbook`), 
         where("status", "==", "approved"),
         orderBy("timestamp", "desc")
     );
@@ -233,7 +243,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
     });
 
     // --- Gallery Images Caching Logic ---
-    const galleryCacheKey = 'upd-gallery-cache';
+    const galleryCacheKey = `upd-gallery-cache-${invitationId}`;
 
     // 1. Try to load from localStorage first
     try {
@@ -246,7 +256,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
     }
     
     // 2. Set up Firestore listener to get fresh data and update cache
-    const qGallery = query(collection(db, "upd_gallery_images"), orderBy("createdAt", "asc"));
+    const qGallery = query(collection(db, `invitations/${invitationId}/gallery_images`), orderBy("createdAt", "asc"));
     const unsubGallery = onSnapshot(qGallery, (snapshot) => {
       const images: GalleryImage[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage));
       setGalleryImages(images); // Update state for immediate view
@@ -290,7 +300,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
 
   const handleShowStory = (videoUrl?: string) => {
     if (videoUrl) {
-      setStoryVideoUrl(transformGoogleDriveUrl(videoUrl));
+      setStoryVideoUrl(videoUrl);
     }
   };
 
@@ -302,7 +312,9 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
         return;
     }
     try {
-        await addDoc(collection(db, "upd_rsvps"), {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const invitationId = pathSegments.length > 1 ? pathSegments[1] : 'hani';
+        await addDoc(collection(db, `invitations/${invitationId}/rsvps`), {
             name: rsvp.name,
             attendance: rsvp.attendance,
             guests: rsvp.attendance === 'Hadir' ? rsvp.guests : 0,
@@ -322,7 +334,9 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
   const handleGuestbookSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
      try {
-        await addDoc(collection(db, "upd_guestbook"), {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const invitationId = pathSegments.length > 1 ? pathSegments[1] : 'hani';
+        await addDoc(collection(db, `invitations/${invitationId}/guestbook`), {
             name: guestbook.name,
             message: guestbook.message,
             timestamp: serverTimestamp(),
@@ -340,7 +354,11 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
     }
   };
 
-  const coverImage = weddingInfo.coverImageUrl ? transformGoogleDriveUrl(weddingInfo.coverImageUrl) : "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=1920&auto=format&fit=crop";
+  const coverImage = weddingInfo.coverImageUrl || "https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=1920&auto=format&fit=crop";
+  const openingImageUrl = weddingInfo.coverOpeningImageUrl;
+  const brideCoverPhoto = weddingInfo.brideCoverPhotoUrl;
+  const groomCoverPhoto = weddingInfo.groomCoverPhotoUrl;
+  
   const coverFontStyle: React.CSSProperties = {
     fontFamily: fontMap[weddingInfo.coverFont || 'serif'] || 'serif',
   };
@@ -365,18 +383,113 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
                 src={coverImage}
                 alt="Couple"
                 fill
+                priority
+                sizes="100vw"
                 className="object-cover -z-10 brightness-50"
               />
+              
+              {weddingInfo.flowerFrameTopLeftUrl && (
+                  <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2, duration: 1 }}
+                      className="absolute top-0 left-0 w-1/3 md:w-1/4 pointer-events-none"
+                  >
+                      <Image src={weddingInfo.flowerFrameTopLeftUrl} alt="Top Left Flower" width={300} height={300} priority className="object-contain" />
+                  </motion.div>
+              )}
+               {weddingInfo.flowerFrameTopRightUrl && (
+                  <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2, duration: 1 }}
+                      className="absolute top-0 right-0 w-1/3 md:w-1/4 pointer-events-none"
+                  >
+                      <Image src={weddingInfo.flowerFrameTopRightUrl} alt="Top Right Flower" width={300} height={300} priority className="object-contain" />
+                  </motion.div>
+               )}
+               {weddingInfo.flowerFrameBottomLeftUrl && (
+                  <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2, duration: 1 }}
+                      className="absolute bottom-0 left-0 w-1/3 md:w-1/4 pointer-events-none"
+                  >
+                      <Image src={weddingInfo.flowerFrameBottomLeftUrl} alt="Bottom Left Flower" width={300} height={300} priority className="object-contain" />
+                  </motion.div>
+               )}
+               {weddingInfo.flowerFrameBottomRightUrl && (
+                  <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2, duration: 1 }}
+                      className="absolute bottom-0 right-0 w-1/3 md:w-1/4 pointer-events-none"
+                  >
+                      <Image src={weddingInfo.flowerFrameBottomRightUrl} alt="Bottom Right Flower" width={300} height={300} priority className="object-contain" />
+                  </motion.div>
+               )}
+
+
               <div className="relative flex flex-col items-center p-4">
-                <p className="text-lg md:text-xl tracking-wider">The Wedding Of</p>
-                <h1 className="text-5xl md:text-8xl font-extrabold my-4" style={coverFontStyle}>
+                 {openingImageUrl && (
+                    <motion.div
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.7, ease: 'easeOut' }}
+                      className="mb-4"
+                    >
+                        <Image src={openingImageUrl} alt="Opening decoration" width={200} height={100} className="object-contain" />
+                    </motion.div>
+                 )}
+                <motion.p
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.7, ease: 'easeOut' }}
+                  className="text-lg md:text-xl tracking-wider"
+                >
+                  The Wedding Of
+                </motion.p>
+                
+                 {(brideCoverPhoto || groomCoverPhoto) && (
+                    <motion.div 
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
+                        className="flex items-center gap-4 my-6"
+                    >
+                        {brideCoverPhoto && (
+                            <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-white/50 shadow-lg">
+                                <Image src={brideCoverPhoto} alt="Mempelai Wanita" fill objectFit="cover" />
+                            </div>
+                        )}
+                         {groomCoverPhoto && (
+                            <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-white/50 shadow-lg">
+                                <Image src={groomCoverPhoto} alt="Mempelai Pria" fill objectFit="cover" />
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+                
+                <motion.h1
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.5, duration: 0.7, ease: 'easeOut' }}
+                  className="text-5xl md:text-8xl font-extrabold"
+                  style={coverFontStyle}
+                >
                   {weddingInfo.brideName} & {weddingInfo.groomName}
-                </h1>
+                </motion.h1>
                 <GuestNameDisplay guest={guest} fontStyle={coverFontStyle} />
-                <Button onClick={handleOpenInvitation} className="mt-8 gap-2" size="lg">
-                  <Mail className="h-5 w-5" />
-                  Buka Undangan
-                </Button>
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 1.1, duration: 0.7, ease: 'easeOut' }}
+                >
+                  <Button onClick={handleOpenInvitation} className="mt-8 gap-2" size="lg">
+                    <Mail className="h-5 w-5" />
+                    Buka Undangan
+                  </Button>
+                </motion.div>
               </div>
               <div className="absolute bottom-6 text-center text-xs text-white/70 w-full px-4">
                 <p>&copy; 2024 Dibuat dengan <Heart className="inline h-3 w-3" /> oleh VELL</p>
@@ -388,9 +501,19 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
         
       <AnimatePresence>
         {isOpened && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }}>
-                <FloatingNav onScroll={scrollToSection} onToggleMusic={toggleMusic} isMusicPlaying={isMusicPlaying} />
-            </motion.div>
+            <>
+              <FloatingNav onScroll={scrollToSection} onToggleMusic={toggleMusic} isMusicPlaying={isMusicPlaying} />
+              {weddingInfo.innerFrameTopRightUrl && (
+                <div className="fixed top-0 right-0 w-1/4 md:w-1/6 pointer-events-none z-10">
+                  <Image src={weddingInfo.innerFrameTopRightUrl} alt="Inner Frame Top Right" width={200} height={200} className="object-contain" />
+                </div>
+              )}
+              {weddingInfo.innerFrameBottomLeftUrl && (
+                <div className="fixed bottom-0 left-0 w-1/4 md:w-1/6 pointer-events-none z-10">
+                  <Image src={weddingInfo.innerFrameBottomLeftUrl} alt="Inner Frame Bottom Left" width={200} height={200} className="object-contain" />
+                </div>
+              )}
+            </>
         )}
       </AnimatePresence>
       
@@ -400,18 +523,18 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
         )}
       </AnimatePresence>
 
-      <div id="main-invitation" className={isOpened ? 'block' : 'hidden'}>
+      <div id="main-invitation" className={cn("relative bg-gradient-to-b from-rose-50 via-rose-50 to-background", isOpened ? 'block' : 'hidden')}>
         <main className="container mx-auto px-4 py-16 sm:py-24 space-y-24">
             <section id="couple" className="text-center">
                 <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'serif' }}>بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
                     Dengan penuh rasa syukur, kami mengundang Anda untuk menjadi bagian dari hari bahagia kami.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-4xl mx-auto">
-                    <div className="flex flex-col items-center">
+                <div className="flex flex-col md:flex-row gap-8 md:gap-4 items-center justify-center max-w-4xl mx-auto">
+                    <div className="flex-1 flex flex-col items-center md:items-end text-center md:text-right">
                         <button onClick={() => handleShowStory(weddingInfo.brideStoryUrl)} className="relative cursor-pointer group">
-                             <div className={cn("relative w-[250px] h-[250px] rounded-full p-1", weddingInfo.brideStoryUrl ? "bg-primary" : "bg-white")}>
-                                <Image src="https://picsum.photos/seed/bride/400/400" alt="Bride" width={250} height={250} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="bride" />
+                             <div className={cn("relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full p-1", weddingInfo.brideStoryUrl ? "bg-primary" : "bg-white")}>
+                                <Image src="https://picsum.photos/seed/bride/400/400" alt="Bride" width={220} height={220} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="bride" />
                              </div>
                              <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
                                  {weddingInfo.brideStoryUrl && <p className="text-white opacity-0 group-hover:opacity-100 font-semibold">Lihat Story</p>}
@@ -420,10 +543,13 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
                         <h3 className="text-3xl font-bold mt-4" style={{ fontFamily: 'serif' }}>{weddingInfo.brideName}</h3>
                         <p className="text-muted-foreground mt-2">{weddingInfo.brideBio}</p>
                     </div>
-                    <div className="flex flex-col items-center">
+
+                    <div className="text-6xl font-extralight text-primary hidden md:block" style={{fontFamily: "'Great Vibes', cursive"}}>&amp;</div>
+
+                    <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
                          <button onClick={() => handleShowStory(weddingInfo.groomStoryUrl)} className="relative cursor-pointer group">
-                             <div className={cn("relative w-[250px] h-[250px] rounded-full p-1", weddingInfo.groomStoryUrl ? "bg-primary" : "bg-white")}>
-                                <Image src="https://picsum.photos/seed/groom/400/400" alt="Groom" width={250} height={250} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="groom" />
+                             <div className={cn("relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full p-1", weddingInfo.groomStoryUrl ? "bg-primary" : "bg-white")}>
+                                <Image src="https://picsum.photos/seed/groom/400/400" alt="Groom" width={220} height={220} className="rounded-full shadow-lg object-cover w-full h-full" data-ai-hint="groom" />
                             </div>
                             <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
                                  {weddingInfo.groomStoryUrl && <p className="text-white opacity-0 group-hover:opacity-100 font-semibold">Lihat Story</p>}
@@ -500,7 +626,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo }: { initialWe
                     {galleryImages.length > 0 ? (
                         galleryImages.map((image) => (
                             <div key={image.id} className="aspect-square relative rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition-transform">
-                                <Image src={transformGoogleDriveUrl(image.imageUrl)} alt={`Gallery image`} fill className="object-cover" />
+                                <Image src={image.imageUrl} alt={`Gallery image`} fill className="object-cover" />
                             </div>
                         ))
                     ) : (

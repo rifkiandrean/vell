@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -32,7 +31,8 @@ import {
   PlusCircle,
   Image as ImageIcon,
   Music,
-  Type
+  Type,
+  Upload,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -77,7 +78,9 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
+const INVITATION_ID = 'type-01';
 
 // --- Data Types ---
 interface RsvpEntry {
@@ -124,8 +127,10 @@ const weddingInfoSchema = z.object({
   groomName: z.string().min(1, "Nama mempelai pria wajib diisi"),
   brideBio: z.string().optional(),
   groomBio: z.string().optional(),
-  brideStoryUrl: z.string().url("URL Video tidak valid").or(z.literal('')).optional(),
-  groomStoryUrl: z.string().url("URL Video tidak valid").or(z.literal('')).optional(),
+  brideCoverPhotoUrl: z.string().optional(),
+  groomCoverPhotoUrl: z.string().optional(),
+  brideStoryUrl: z.string().optional(),
+  groomStoryUrl: z.string().optional(),
   ceremonyDate: z.string().min(1, "Tanggal akad wajib diisi"),
   ceremonyTime: z.string().min(1, "Waktu akad wajib diisi"),
   ceremonyLocation: z.string().min(1, "Lokasi akad wajib diisi"),
@@ -135,16 +140,22 @@ const weddingInfoSchema = z.object({
   receptionLocation: z.string().min(1, "Lokasi resepsi wajib diisi"),
   receptionMapUrl: z.string().url("URL Peta tidak valid").or(z.literal('')),
   isMusicEnabled: z.boolean().optional(),
-  backgroundMusicUrl: z.string().url("URL Musik tidak valid").or(z.literal('')),
+  backgroundMusicUrl: z.string().optional(),
   invitedFamilies: z.array(z.string()).optional(),
-  coverImageUrl: z.string().url("URL Gambar tidak valid").or(z.literal('')),
-  flowerFrameUrl: z.string().url("URL Gambar tidak valid").or(z.literal('')).optional(),
+  coverImageUrl: z.string().optional(),
+  coverOpeningImageUrl: z.string().optional(),
+  flowerFrameTopLeftUrl: z.string().optional(),
+  flowerFrameTopRightUrl: z.string().optional(),
+  flowerFrameBottomLeftUrl: z.string().optional(),
+  flowerFrameBottomRightUrl: z.string().optional(),
+  innerFrameTopRightUrl: z.string().optional(),
+  innerFrameBottomLeftUrl: z.string().optional(),
   storyTimeline: z.array(storyTimelineItemSchema).optional(),
   coverFont: z.string().optional(),
 });
 
 const galleryImageSchema = z.object({
-  imageUrl: z.string().url("URL Gambar tidak valid"),
+  imageUrl: z.string().min(1, "URL Gambar wajib diisi"),
 });
 
 type WeddingInfoFormValues = z.infer<typeof weddingInfoSchema>;
@@ -164,11 +175,11 @@ function ReplyDialog({
   const { user } = useAuth();
   const { toast } = useToast();
   const [replyText, setReplyText] = useState('');
-  const [replyFrom, setReplyFrom] = useState(weddingInfo.brideName || 'Anya');
+  const [replyFrom, setReplyFrom] = useState(weddingInfo.brideName || 'Mempelai Wanita');
 
   useEffect(() => {
     // Set default reply from to bride's name when component loads
-    setReplyFrom(weddingInfo.brideName || 'Anya');
+    setReplyFrom(weddingInfo.brideName || 'Mempelai Wanita');
   }, [weddingInfo]);
 
   const handleSendReply = async () => {
@@ -182,7 +193,7 @@ function ReplyDialog({
     }
 
     try {
-      const docRef = doc(db, 'upd_guestbook', message.id);
+      const docRef = doc(db, `invitations/${INVITATION_ID}/guestbook`, message.id);
       await updateDoc(docRef, {
         status: 'approved',
         reply: {
@@ -219,12 +230,12 @@ function ReplyDialog({
             onValueChange={(value) => setReplyFrom(value)}
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value={weddingInfo.brideName || 'Anya'} id="from-bride" />
-              <Label htmlFor="from-bride">{weddingInfo.brideName || 'Anya'}</Label>
+              <RadioGroupItem value={weddingInfo.brideName || 'Mempelai Wanita'} id="from-bride" />
+              <Label htmlFor="from-bride">{weddingInfo.brideName || 'Mempelai Wanita'}</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value={weddingInfo.groomName || 'Loid'} id="from-groom" />
-              <Label htmlFor="from-groom">{weddingInfo.groomName || 'Loid'}</Label>
+              <RadioGroupItem value={weddingInfo.groomName || 'Mempelai Pria'} id="from-groom" />
+              <Label htmlFor="from-groom">{weddingInfo.groomName || 'Mempelai Pria'}</Label>
             </div>
           </RadioGroup>
         </div>
@@ -376,6 +387,78 @@ function GuestbookContent({
   );
 }
 
+// --- FileUploader Component ---
+function FileUploader({ form, fieldName, label, accept }: { form: any; fieldName: keyof WeddingInfoFormValues; label: string; accept: string; }) {
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Gagal mengunggah file.');
+            }
+
+            const { filePath } = await response.json();
+            form.setValue(fieldName, filePath, { shouldValidate: true, shouldDirty: true });
+            toast({ title: 'Sukses', description: `File untuk ${label} berhasil diunggah.` });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    const fieldValue = form.watch(fieldName);
+
+    return (
+        <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormControl>
+                <div className="flex items-center gap-4">
+                    <Input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept={accept}
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                    >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploading ? 'Mengunggah...' : 'Unggah File'}
+                    </Button>
+                    {fieldValue && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <ImageIcon className="h-4 w-4" />
+                            <span className="truncate max-w-[200px]">{typeof fieldValue === 'string' ? fieldValue.split('/').pop() : ''}</span>
+                        </div>
+                    )}
+                </div>
+            </FormControl>
+            <FormDescription>Gunakan file {accept}.</FormDescription>
+            <FormMessage />
+        </FormItem>
+    );
+}
+
 // --- Settings Tab Component ---
 function SettingsContent({
     weddingInfo,
@@ -391,6 +474,8 @@ function SettingsContent({
             groomName: '',
             brideBio: '',
             groomBio: '',
+            brideCoverPhotoUrl: '',
+            groomCoverPhotoUrl: '',
             brideStoryUrl: '',
             groomStoryUrl: '',
             ceremonyDate: '',
@@ -405,7 +490,13 @@ function SettingsContent({
             backgroundMusicUrl: '',
             invitedFamilies: [],
             coverImageUrl: '',
-            flowerFrameUrl: '',
+            flowerFrameTopLeftUrl: '',
+            flowerFrameTopRightUrl: '',
+            flowerFrameBottomLeftUrl: '',
+            flowerFrameBottomRightUrl: '',
+            innerFrameTopRightUrl: '',
+            innerFrameBottomLeftUrl: '',
+            coverOpeningImageUrl: '',
             storyTimeline: [],
             coverFont: 'serif',
         },
@@ -416,13 +507,12 @@ function SettingsContent({
       name: "storyTimeline",
     });
     
-    // Custom field for textarea
     const [invitedFamiliesText, setInvitedFamiliesText] = useState('');
 
     useEffect(() => {
         const fullWeddingInfo = {
-            ...form.getValues(), // Keep default values for controlled components
-            ...weddingInfo, // Overwrite with fetched data
+            ...form.getValues(),
+            ...weddingInfo,
         };
         form.reset(fullWeddingInfo);
         
@@ -438,6 +528,7 @@ function SettingsContent({
         const familiesArray = invitedFamiliesText.split('\n').map(name => name.trim()).filter(name => name);
         onSave({ ...data, invitedFamilies: familiesArray });
     };
+
 
     return (
       <ScrollArea className="h-[65vh] pr-4">
@@ -458,22 +549,12 @@ function SettingsContent({
                         <FormField control={form.control} name="groomBio" render={({ field }) => (
                             <FormItem><FormLabel>Bio Mempelai Pria</FormLabel><FormControl><Input placeholder="Putra dari Bapak & Ibu..." {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                        <FormField control={form.control} name="brideStoryUrl" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>URL Video Story Mempelai Wanita</FormLabel>
-                                <FormControl><Input placeholder="Link Google Drive video..." {...field} /></FormControl>
-                                <FormDescription>Gunakan link Google Drive yang bisa dibagikan.</FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <FormField control={form.control} name="groomStoryUrl" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>URL Video Story Mempelai Pria</FormLabel>
-                                <FormControl><Input placeholder="Link Google Drive video..." {...field} /></FormControl>
-                                 <FormDescription>Gunakan link Google Drive yang bisa dibagikan.</FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md">
+                           <FileUploader form={form} fieldName="brideCoverPhotoUrl" label="Foto Cover Mempelai Wanita" accept="image/png, image/jpeg" />
+                           <FileUploader form={form} fieldName="groomCoverPhotoUrl" label="Foto Cover Mempelai Pria" accept="image/png, image/jpeg" />
+                        </div>
+                        <FileUploader form={form} fieldName="brideStoryUrl" label="Video Story Mempelai Wanita" accept=".mp4,video/mp4" />
+                        <FileUploader form={form} fieldName="groomStoryUrl" label="Video Story Mempelai Pria" accept=".mp4,video/mp4" />
                     </div>
                 </div>
                 <Separator />
@@ -559,30 +640,20 @@ function SettingsContent({
                 <div>
                     <h3 className="text-lg font-medium">Tampilan Undangan</h3>
                      <div className="space-y-4 mt-2">
-                        <FormField
-                            control={form.control}
-                            name="coverImageUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL Gambar Latar Cover</FormLabel>
-                                    <FormControl><Input placeholder="https://images.unsplash.com/..." {...field} /></FormControl>
-                                    <FormDescription>Gunakan gambar dengan orientasi potret (vertikal) untuk hasil terbaik.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="flowerFrameUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL Gambar Bingkai Bunga (PNG)</FormLabel>
-                                    <FormControl><Input placeholder="https://www.pngall.com/..." {...field} /></FormControl>
-                                    <FormDescription>Gunakan gambar PNG transparan untuk bingkai di halaman pembuka.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <FileUploader form={form} fieldName="coverImageUrl" label="Gambar Latar Cover" accept="image/png, image/jpeg" />
+                        <FileUploader form={form} fieldName="coverOpeningImageUrl" label="Gambar Pembuka Cover (di atas teks)" accept="image/png, image/webp" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-lg">
+                            <h4 className="md:col-span-2 text-md font-medium">Bingkai Bunga Cover</h4>
+                            <FileUploader form={form} fieldName="flowerFrameTopLeftUrl" label="Bingkai Kiri Atas" accept="image/png, image/webp" />
+                            <FileUploader form={form} fieldName="flowerFrameTopRightUrl" label="Bingkai Kanan Atas" accept="image/png, image/webp" />
+                            <FileUploader form={form} fieldName="flowerFrameBottomLeftUrl" label="Bingkai Kiri Bawah" accept="image/png, image/webp" />
+                            <FileUploader form={form} fieldName="flowerFrameBottomRightUrl" label="Bingkai Kanan Bawah" accept="image/png, image/webp" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-lg">
+                             <h4 className="md:col-span-2 text-md font-medium">Tampilan Bingkai Dalam Undangan</h4>
+                            <FileUploader form={form} fieldName="innerFrameTopRightUrl" label="Bingkai Dalam - Kanan Atas" accept="image/png, image/webp" />
+                            <FileUploader form={form} fieldName="innerFrameBottomLeftUrl" label="Bingkai Dalam - Kiri Bawah" accept="image/png, image/webp" />
+                        </div>
                          <FormField
                             control={form.control}
                             name="coverFont"
@@ -626,17 +697,7 @@ function SettingsContent({
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="backgroundMusicUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL File Musik (MP3)</FormLabel>
-                                    <FormControl><Input placeholder="https://example.com/musik.mp3" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                         <FileUploader form={form} fieldName="backgroundMusicUrl" label="File Musik Latar" accept=".mp3, audio/mpeg" />
                     </div>
                 </div>
                 <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -650,18 +711,15 @@ function SettingsContent({
 
 // --- Gallery Tab Component ---
 function GalleryContent() {
-    const { user, transformGoogleDriveUrl } = useAuth();
+    const { user } = useAuth();
     const { toast } = useToast();
     const [images, setImages] = useState<GalleryImage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
-    const form = useForm<GalleryImageFormValues>({
-        resolver: zodResolver(galleryImageSchema),
-        defaultValues: { imageUrl: '' },
-    });
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const q = query(collection(db, "upd_gallery_images"), orderBy("createdAt", "asc"));
+        const q = query(collection(db, `invitations/${INVITATION_ID}/gallery_images`), orderBy("createdAt", "asc"));
         const unsub = onSnapshot(q, (snapshot) => {
             const fetchedImages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage));
             setImages(fetchedImages);
@@ -670,24 +728,46 @@ function GalleryContent() {
         return () => unsub();
     }, []);
 
-    const onAddImageSubmit = async (data: GalleryImageFormValues) => {
+    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
         try {
-            await addDoc(collection(db, "upd_gallery_images"), {
-                imageUrl: data.imageUrl,
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error('Gagal mengunggah file.');
+            
+            const { filePath } = await response.json();
+
+            await addDoc(collection(db, `invitations/${INVITATION_ID}/gallery_images`), {
+                imageUrl: filePath,
                 createdAt: serverTimestamp(),
             });
+
             logActivity(user, `Menambahkan gambar baru ke galeri.`);
             toast({ title: 'Gambar Ditambahkan', description: 'Gambar baru berhasil ditambahkan ke galeri.' });
-            form.reset();
+            
         } catch (error) {
             console.error("Gagal menambahkan gambar:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Gagal menambahkan gambar.' });
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
 
     const handleDeleteImage = async (imageId: string) => {
         try {
-            await deleteDoc(doc(db, "upd_gallery_images", imageId));
+            await deleteDoc(doc(db, `invitations/${INVITATION_ID}/gallery_images`, imageId));
             logActivity(user, `Menghapus gambar dari galeri (ID: ${imageId}).`);
             toast({ title: 'Gambar Dihapus', description: 'Gambar telah dihapus dari galeri.' });
         } catch (error) {
@@ -699,29 +779,24 @@ function GalleryContent() {
     return (
         <ScrollArea className="h-[65vh] pr-4">
             <div className="space-y-6">
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onAddImageSubmit)} className="space-y-4 p-4 border rounded-lg">
-                        <h3 className="text-lg font-medium">Tambah Gambar Baru</h3>
-                        <FormField
-                            control={form.control}
-                            name="imageUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL Gambar</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="https://..." {...field} />
-                                    </FormControl>
-                                    <FormDescription>Salin dan tempel URL gambar di sini.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="submit" disabled={form.formState.isSubmitting}>
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            {form.formState.isSubmitting ? 'Menambahkan...' : 'Tambah ke Galeri'}
-                        </Button>
-                    </form>
-                </Form>
+                <div className="p-4 border rounded-lg">
+                    <h3 className="text-lg font-medium mb-4">Tambah Gambar Baru</h3>
+                    <Input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept="image/png, image/jpeg, image/gif"
+                    />
+                    <Button 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                    >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {isUploading ? 'Mengunggah...' : 'Pilih Gambar'}
+                    </Button>
+                     <p className="text-sm text-muted-foreground mt-2">Pilih gambar dari komputer Anda untuk diunggah.</p>
+                </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {isLoading ? (
@@ -730,7 +805,7 @@ function GalleryContent() {
                         images.map(image => (
                             <div key={image.id} className="relative group aspect-square">
                                 <Image
-                                    src={transformGoogleDriveUrl(image.imageUrl)}
+                                    src={image.imageUrl}
                                     alt="Gallery image"
                                     fill
                                     className="object-cover rounded-lg"
@@ -787,14 +862,12 @@ export default function UpdAdminPage() {
   // Effect for Guestbook Data
   useEffect(() => {
     const rsvpQuery = query(
-      collection(db, 'upd_rsvps'),
-      where('attendance', '==', 'Hadir'),
-      orderBy('timestamp', 'desc')
+      collection(db, `invitations/${INVITATION_ID}/rsvps`),
+      where('attendance', '==', 'Hadir')
     );
     const guestbookQuery = query(
-      collection(db, 'upd_guestbook'),
-      where('status', '==', 'approved'),
-      orderBy('timestamp', 'desc')
+      collection(db, `invitations/${INVITATION_ID}/guestbook`),
+      where('status', '==', 'approved')
     );
 
     const unsubRsvp = onSnapshot(
@@ -823,6 +896,9 @@ export default function UpdAdminPage() {
               };
             });
 
+            // Sort client-side
+            combined.sort((a, b) => b.rsvpTimestamp.toMillis() - a.rsvpTimestamp.toMillis());
+
             setCombinedEntries(combined);
             setIsGuestbookLoading(false);
           },
@@ -846,9 +922,8 @@ export default function UpdAdminPage() {
   // Effect for Moderation Data
   useEffect(() => {
     const q = query(
-      collection(db, 'upd_guestbook'),
-      where('status', '==', 'pending'),
-      orderBy('timestamp', 'desc')
+      collection(db, `invitations/${INVITATION_ID}/guestbook`),
+      where('status', '==', 'pending')
     );
 
     const unsubscribe = onSnapshot(
@@ -857,6 +932,8 @@ export default function UpdAdminPage() {
         const messages = snapshot.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as GuestbookMessage)
         );
+        // Sort client-side
+        messages.sort((a,b) => b.timestamp.toMillis() - a.timestamp.toMillis());
         setPendingMessages(messages);
         setIsModerationLoading(false);
       },
@@ -876,7 +953,7 @@ export default function UpdAdminPage() {
   
   // Effect for Settings Data
   useEffect(() => {
-    const unsubSettings = onSnapshot(doc(db, "upd_settings", "weddingInfo"), (doc) => {
+    const unsubSettings = onSnapshot(doc(db, `invitations/${INVITATION_ID}/settings`, "weddingInfo"), (doc) => {
         if (doc.exists()) {
             setWeddingInfo(doc.data());
         }
@@ -888,7 +965,7 @@ export default function UpdAdminPage() {
   // Moderation action handlers
   const handleApprove = async (messageId: string, name: string) => {
     try {
-      const docRef = doc(db, 'upd_guestbook', messageId);
+      const docRef = doc(db, `invitations/${INVITATION_ID}/guestbook`, messageId);
       await updateDoc(docRef, { status: 'approved' });
       logActivity(user, `Menyetujui ucapan dari ${name}`);
       toast({ title: 'Disetujui', description: 'Ucapan akan ditampilkan di buku tamu.' });
@@ -900,7 +977,7 @@ export default function UpdAdminPage() {
 
   const handleDelete = async (messageId: string, name: string) => {
     try {
-      const docRef = doc(db, 'upd_guestbook', messageId);
+      const docRef = doc(db, `invitations/${INVITATION_ID}/guestbook`, messageId);
       await deleteDoc(docRef);
       logActivity(user, `Menghapus ucapan dari ${name}`);
       toast({ title: 'Dihapus', description: 'Ucapan telah dihapus secara permanen.' });
@@ -918,7 +995,7 @@ export default function UpdAdminPage() {
   // Settings save handler
   const handleSaveSettings = async (data: WeddingInfoFormValues) => {
     try {
-        const docRef = doc(db, "upd_settings", "weddingInfo");
+        const docRef = doc(db, `invitations/${INVITATION_ID}/settings`, "weddingInfo");
         await setDoc(docRef, data, { merge: true });
         logActivity(user, `Memperbarui pengaturan undangan.`);
         toast({ title: 'Pengaturan Disimpan', description: 'Informasi pernikahan telah diperbarui.'});
@@ -934,7 +1011,7 @@ export default function UpdAdminPage() {
       <div className="min-h-screen bg-background text-foreground">
         <header className="py-4 px-6 sticky top-0 bg-background/80 backdrop-blur-sm z-10 border-b">
           <Button asChild variant="outline">
-            <Link href="/upd/hani">
+            <Link href={`/upd/${INVITATION_ID}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Kembali ke Undangan
             </Link>
@@ -947,7 +1024,7 @@ export default function UpdAdminPage() {
                 Dasbor Admin Undangan
               </CardTitle>
               <CardDescription>
-                Kelola buku tamu, moderasi ucapan, dan pengaturan untuk pernikahan {weddingInfo.brideName || 'Anya'} & {weddingInfo.groomName || 'Loid'}.
+                Kelola buku tamu, moderasi ucapan, dan pengaturan untuk pernikahan {weddingInfo.brideName || 'Mempelai Wanita'} & {weddingInfo.groomName || 'Mempelai Pria'}.
               </CardDescription>
             </CardHeader>
             <CardContent>

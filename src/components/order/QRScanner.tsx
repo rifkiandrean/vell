@@ -1,8 +1,10 @@
 
 "use client";
 
-import { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeError, Html5QrcodeResult } from 'html5-qrcode';
+import { useEffect } from 'react';
+import { useQRScanner } from '@/hooks/useQRScanner';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface QRScannerProps {
   onScanSuccess: (decodedText: string) => void;
@@ -10,45 +12,31 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
-  const scannerRegionId = "qr-scanner-region";
+  const { scannerRef, startScanner, error, stopScanner } = useQRScanner({ onScanSuccess, onScanError });
 
   useEffect(() => {
-    if (!scannerRef.current) {
-      const scanner = new Html5QrcodeScanner(
-        scannerRegionId,
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 }
-        },
-        /* verbose= */ false
-      );
-
-      const successCallback = (decodedText: string, result: Html5QrcodeResult) => {
-        scanner.clear();
-        onScanSuccess(decodedText);
-      };
-
-      const errorCallback = (errorMessage: string) => {
-        if (onScanError) {
-          onScanError(errorMessage);
-        }
-      };
-
-      scanner.render(successCallback, errorCallback);
-      scannerRef.current = scanner;
-    }
-
+    startScanner();
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(error => {
-          console.error("Failed to clear html5-qrcode-scanner.", error);
-        });
-        scannerRef.current = null;
-      }
+      stopScanner();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startScanner, stopScanner]);
 
-  return <div id={scannerRegionId} />;
+  return (
+    <div className="w-full">
+      <div id="qr-scanner-region" ref={scannerRef} className="w-full" />
+      {error && (
+         <Alert variant="destructive" className="mt-4">
+            <AlertTitle>Gagal Memulai Kamera</AlertTitle>
+            <AlertDescription>
+              <p>{error}</p>
+              <p className="mt-2">Pastikan Anda telah memberikan izin akses kamera untuk situs ini di pengaturan browser Anda.</p>
+              <Button variant="secondary" size="sm" className="mt-3" onClick={startScanner}>
+                Coba Lagi
+              </Button>
+            </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
 }
+
