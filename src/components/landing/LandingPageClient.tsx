@@ -63,7 +63,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
           ) : (
             <Mountain className="h-6 w-6" />
           )}
-          <span className="ml-2 text-xl font-bold tracking-tight text-black">{content.brandName || "VELL"}</span>
+          <span className="ml-2 text-xl font-bold tracking-tight text-foreground">{content.brandName || "VELL"}</span>
         </Link>
         <nav className="ml-auto flex items-center gap-2 sm:gap-4">
            <Button variant="ghost" asChild>

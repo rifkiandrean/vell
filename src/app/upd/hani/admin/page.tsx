@@ -138,7 +138,9 @@ const weddingInfoSchema = z.object({
   backgroundMusicUrl: z.string().url("URL Musik tidak valid").or(z.literal('')),
   invitedFamilies: z.array(z.string()).optional(),
   coverImageUrl: z.string().url("URL Gambar tidak valid").or(z.literal('')),
-  flowerFrameUrl: z.string().url("URL Gambar tidak valid").or(z.literal('')).optional(),
+  flowerAsset1Url: z.string().url("URL Gambar tidak valid").or(z.literal('')).optional(),
+  flowerAsset2Url: z.string().url("URL Gambar tidak valid").or(z.literal('')).optional(),
+  flowerAsset3Url: z.string().url("URL Gambar tidak valid").or(z.literal('')).optional(),
   storyTimeline: z.array(storyTimelineItemSchema).optional(),
   coverFont: z.string().optional(),
 });
@@ -405,7 +407,9 @@ function SettingsContent({
             backgroundMusicUrl: '',
             invitedFamilies: [],
             coverImageUrl: '',
-            flowerFrameUrl: '',
+            flowerAsset1Url: '',
+            flowerAsset2Url: '',
+            flowerAsset3Url: '',
             storyTimeline: [],
             coverFont: 'serif',
         },
@@ -573,12 +577,36 @@ function SettingsContent({
                         />
                         <FormField
                             control={form.control}
-                            name="flowerFrameUrl"
+                            name="flowerAsset1Url"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>URL Gambar Bingkai Bunga (PNG)</FormLabel>
+                                    <FormLabel>URL Aset Bunga 1 (PNG)</FormLabel>
                                     <FormControl><Input placeholder="https://www.pngall.com/..." {...field} /></FormControl>
-                                    <FormDescription>Gunakan gambar PNG transparan untuk bingkai di halaman pembuka.</FormDescription>
+                                    <FormDescription>Gunakan gambar PNG transparan. Aset ini akan digunakan untuk sudut kiri atas dan kanan bawah.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="flowerAsset2Url"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL Aset Bunga 2 (PNG)</FormLabel>
+                                    <FormControl><Input placeholder="https://www.pngall.com/..." {...field} /></FormControl>
+                                    <FormDescription>Digunakan untuk sudut kanan atas.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="flowerAsset3Url"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL Aset Bunga 3 (PNG)</FormLabel>
+                                    <FormControl><Input placeholder="https://www.pngall.com/..." {...field} /></FormControl>
+                                    <FormDescription>Digunakan untuk sudut kiri bawah.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

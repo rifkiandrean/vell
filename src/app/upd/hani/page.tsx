@@ -34,6 +34,9 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 coverImageUrl: data.coverImageUrl || '',
                 storyTimeline: data.storyTimeline || [],
                 coverFont: data.coverFont || 'serif',
+                flowerAsset1Url: data.flowerAsset1Url || '',
+                flowerAsset2Url: data.flowerAsset2Url || '',
+                flowerAsset3Url: data.flowerAsset3Url || '',
             };
         }
     } catch (error) {
@@ -61,6 +64,9 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         coverImageUrl: "",
         storyTimeline: [],
         coverFont: 'serif',
+        flowerAsset1Url: '',
+        flowerAsset2Url: '',
+        flowerAsset3Url: '',
     };
 }
 

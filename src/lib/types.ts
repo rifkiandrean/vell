@@ -1,4 +1,5 @@
 
+
 export type Spiciness = 'Mild' | 'Medium' | 'Hot' | 'Extra Hot';
 export type SugarLevel = 'Less Sugar' | 'Normal' | 'Extra Sugar';
 
@@ -209,11 +210,20 @@ export type StoryTimelineItem = {
     description: string;
 };
 
+export type Quote = {
+  id: string;
+  imageUrl: string;
+  text: string;
+  createdAt: any;
+};
+
 export type WeddingInfo = {
     brideName: string;
     groomName: string;
     brideBio: string;
     groomBio: string;
+    brideCoverPhotoUrl?: string;
+    groomCoverPhotoUrl?: string;
     brideStoryUrl?: string;
     groomStoryUrl?: string;
     ceremonyDate: string;
@@ -228,23 +238,31 @@ export type WeddingInfo = {
     backgroundMusicUrl?: string;
     invitedFamilies?: string[];
     coverImageUrl?: string;
+    mainBackgroundUrl?: string;
+    dividerOrnamentUrl?: string;
+    coverOpeningImageUrl?: string;
+    flowerAsset1Url?: string;
+    flowerAsset2Url?: string;
+    flowerAsset3Url?: string;
+    flowerAsset4Url?: string;
+    flowerAsset5Url?: string;
     storyTimeline?: StoryTimelineItem[];
     coverFont?: string;
-    coverOpeningImageUrl?: string;
-    brideCoverPhotoUrl?: string;
-    groomCoverPhotoUrl?: string;
-    flowerFrameTopLeftUrl?: string;
-    flowerFrameTopRightUrl?: string;
-    flowerFrameBottomLeftUrl?: string;
-    flowerFrameBottomRightUrl?: string;
-    innerFrameTopRightUrl?: string;
-    innerFrameBottomLeftUrl?: string;
+    countdownTargetDate?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountHolderName?: string;
+    danaName?: string;
+    danaNumber?: string;
+    danaQrCodeUrl?: string;
+    danaLogoUrl?: string;
+    giftThankYouMessage?: string;
 };
 
 export type GalleryImage = {
   id: string;
   imageUrl: string;
-  createdAt: any; // Firestore Timestamp
+  createdAt: any;
 };
 
 

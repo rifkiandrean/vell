@@ -6,11 +6,11 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 214 70% 23%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 214 70% 23%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 214 70% 23%;
     --primary: 188 55% 46%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
@@ -30,6 +30,12 @@
     --chart-3: 216 12% 52%; /* lighter-grey-blue */
     --chart-4: 218 11% 65%; /* light-grey-blue */
     --chart-5: 224 15% 26%; /* very-dark-grey-blue */
+
+    --upd-background: 35, 7%, 95%;
+    --upd-foreground: 214 59% 31%;
+    --upd-primary: 214 59% 31%;
+    --upd-primary-foreground: 30 0% 100%;
+    --upd-secondary: 25, 20%, 80%;
   }
 
   .dark {
@@ -57,6 +63,12 @@
     --chart-3: 218 11% 65%; /* light-grey-blue */
     --chart-4: 217 32% 17%; /* very-dark-grey-blue */
     --chart-5: 224 15% 26%; /* dark-grey-blue-2 */
+
+    --upd-background: 20, 15%, 15%;
+    --upd-foreground: 214 59% 31%;
+    --upd-primary: 214 59% 31%;
+    --upd-primary-foreground: 30 0% 100%;
+    --upd-secondary: 25, 20%, 30%;
   }
 }
 
@@ -91,5 +103,62 @@
   }
    .printable-area * {
     visibility: visible;
+  }
+}
+
+
+@layer utilities {
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-heart {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 1s ease-out forwards;
+  }
+
+  .animate-pulse-heart {
+    animation: pulse-heart 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes sway-1 {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  .animate-sway-1 {
+    animation: sway-1 8s ease-in-out infinite;
+  }
+  @keyframes sway-2 {
+    0%, 100% { transform: rotate(3deg); }
+    50% { transform: rotate(-3deg); }
+  }
+  .animate-sway-2 {
+    animation: sway-2 7s ease-in-out infinite;
+  }
+  @keyframes sway-3 {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  .animate-sway-3 {
+    animation: sway-3 6s ease-in-out infinite;
+  }
+  @keyframes sway-4 {
+    0%, 100% { transform: rotate(4deg); }
+    50% { transform: rotate(-4deg); }
+  }
+  .animate-sway-4 {
+    animation: sway-4 5s ease-in-out infinite;
+  }
+  @keyframes sway-5 {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(6deg); }
+  }
+  .animate-sway-5 {
+    animation: sway-5 9s ease-in-out infinite;
   }
 }

@@ -1,8 +1,9 @@
 
+
 import { Suspense } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { WeddingInfo } from '@/lib/types';
+import type { WeddingInfo, Quote } from '@/lib/types';
 import { WeddingInvitationPageContent } from '@/components/upd/WeddingInvitationPageContent';
 
 async function getWeddingInfo(): Promise<WeddingInfo> {
@@ -32,15 +33,25 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 backgroundMusicUrl: data.backgroundMusicUrl || '',
                 invitedFamilies: data.invitedFamilies || [],
                 coverImageUrl: data.coverImageUrl || '',
-                flowerFrameTopLeftUrl: data.flowerFrameTopLeftUrl || '',
-                flowerFrameTopRightUrl: data.flowerFrameTopRightUrl || '',
-                flowerFrameBottomLeftUrl: data.flowerFrameBottomLeftUrl || '',
-                flowerFrameBottomRightUrl: data.flowerFrameBottomRightUrl || '',
-                innerFrameTopRightUrl: data.innerFrameTopRightUrl || '',
-                innerFrameBottomLeftUrl: data.innerFrameBottomLeftUrl || '',
+                mainBackgroundUrl: data.mainBackgroundUrl || '',
+                dividerOrnamentUrl: data.dividerOrnamentUrl || '',
                 coverOpeningImageUrl: data.coverOpeningImageUrl || '',
+                flowerAsset1Url: data.flowerAsset1Url || '',
+                flowerAsset2Url: data.flowerAsset2Url || '',
+                flowerAsset3Url: data.flowerAsset3Url || '',
+                flowerAsset4Url: data.flowerAsset4Url || '',
+                flowerAsset5Url: data.flowerAsset5Url || '',
                 storyTimeline: data.storyTimeline || [],
                 coverFont: data.coverFont || 'serif',
+                countdownTargetDate: data.countdownTargetDate || '',
+                bankName: data.bankName || '',
+                accountNumber: data.accountNumber || '',
+                accountHolderName: data.accountHolderName || '',
+                danaName: data.danaName || '',
+                danaNumber: data.danaNumber || '',
+                danaQrCodeUrl: data.danaQrCodeUrl || '',
+                danaLogoUrl: data.danaLogoUrl || '',
+                giftThankYouMessage: data.giftThankYouMessage || 'Terima kasih atas perhatiannya.',
             };
         }
     } catch (error) {
@@ -68,26 +79,55 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         backgroundMusicUrl: "",
         invitedFamilies: [],
         coverImageUrl: "",
-        flowerFrameTopLeftUrl: "",
-        flowerFrameTopRightUrl: "",
-        flowerFrameBottomLeftUrl: "",
-        flowerFrameBottomRightUrl: "",
-        innerFrameTopRightUrl: "",
-        innerFrameBottomLeftUrl: "",
+        mainBackgroundUrl: "",
+        dividerOrnamentUrl: "",
         coverOpeningImageUrl: "",
+        flowerAsset1Url: '',
+        flowerAsset2Url: '',
+        flowerAsset3Url: '',
+        flowerAsset4Url: '',
+        flowerAsset5Url: '',
         storyTimeline: [],
         coverFont: 'serif',
+        countdownTargetDate: '',
+        bankName: '',
+        accountNumber: '',
+        accountHolderName: '',
+        danaName: '',
+        danaNumber: '',
+        danaQrCodeUrl: '',
+        danaLogoUrl: '',
+        giftThankYouMessage: 'Terima kasih atas perhatiannya.',
     };
+}
+
+async function getQuotes(): Promise<Quote[]> {
+    try {
+        const q = query(collection(db, "invitations/type-01/quotes"), orderBy("createdAt", "asc"));
+        const querySnapshot = await getDocs(q);
+        const quotes = querySnapshot.docs.map(doc => {
+            const data = doc.data() as Omit<Quote, 'id'>;
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate().toISOString(), // Serialize timestamp
+            };
+        });
+        return quotes;
+    } catch (error) {
+        console.error("Error fetching quotes:", error);
+        return [];
+    }
 }
 
 
 export default async function WeddingInvitationPage() {
   const weddingInfo = await getWeddingInfo();
+  const quotes = await getQuotes();
   
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      {/* WeddingInvitationPageContent is a Client Component that receives server-fetched data as props */}
-      <WeddingInvitationPageContent initialWeddingInfo={weddingInfo} />
+      <WeddingInvitationPageContent initialWeddingInfo={weddingInfo} initialQuotes={quotes} />
     </Suspense>
   );
 }

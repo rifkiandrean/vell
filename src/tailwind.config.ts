@@ -18,6 +18,7 @@ export default {
         inter: ['"Inter"', 'sans-serif'],
         headline: ['"PT Sans"', 'sans-serif'],
         code: ['monospace'],
+        arabic: ['"Noto Naskh Arabic"', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

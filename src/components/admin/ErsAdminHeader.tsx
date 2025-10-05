@@ -42,7 +42,7 @@ export function ErsAdminHeader({ title }: ErsAdminHeaderProps) {
                   <Image src={logoUrl} alt="VELL logo" width={32} height={32} className="h-8 w-8 object-contain" />
               )}
               <div className="flex items-baseline gap-2">
-                  <h1 className="text-2xl font-bold tracking-tighter text-black">VELL</h1>
+                  <h1 className="text-2xl font-bold tracking-tighter text-foreground">VELL</h1>
               </div>
             </Link>
              {title && (

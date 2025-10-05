@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -33,6 +34,13 @@ import {
   Music,
   Type,
   Upload,
+  CalendarIcon,
+  Album,
+  Heart,
+  CalendarDays,
+  CoupleIcon,
+  Quote,
+  Edit,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,7 +58,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -68,17 +75,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { formatDistanceToNow } from 'date-fns';
+import { format as formatDate, formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { WeddingInfo, GalleryImage, StoryTimelineItem } from '@/lib/types';
+import type { WeddingInfo, Quote as QuoteType } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const INVITATION_ID = 'type-01';
 
@@ -144,22 +154,34 @@ const weddingInfoSchema = z.object({
   invitedFamilies: z.array(z.string()).optional(),
   coverImageUrl: z.string().optional(),
   coverOpeningImageUrl: z.string().optional(),
-  flowerFrameTopLeftUrl: z.string().optional(),
-  flowerFrameTopRightUrl: z.string().optional(),
-  flowerFrameBottomLeftUrl: z.string().optional(),
-  flowerFrameBottomRightUrl: z.string().optional(),
-  innerFrameTopRightUrl: z.string().optional(),
-  innerFrameBottomLeftUrl: z.string().optional(),
+  mainBackgroundUrl: z.string().optional(),
+  dividerOrnamentUrl: z.string().optional(),
+  flowerAsset1Url: z.string().optional(),
+  flowerAsset2Url: z.string().optional(),
+  flowerAsset3Url: z.string().optional(),
+  flowerAsset4Url: z.string().optional(),
+  flowerAsset5Url: z.string().optional(),
   storyTimeline: z.array(storyTimelineItemSchema).optional(),
   coverFont: z.string().optional(),
+  countdownTargetDate: z.string().optional(),
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  accountHolderName: z.string().optional(),
+  danaName: z.string().optional(),
+  danaNumber: z.string().optional(),
+  danaQrCodeUrl: z.string().optional(),
+  danaLogoUrl: z.string().optional(),
+  giftThankYouMessage: z.string().optional(),
 });
 
-const galleryImageSchema = z.object({
-  imageUrl: z.string().min(1, "URL Gambar wajib diisi"),
+const quoteSchema = z.object({
+    imageUrl: z.string().min(1, "Gambar wajib diunggah"),
+    text: z.string().min(1, "Teks kutipan wajib diisi"),
 });
+
 
 type WeddingInfoFormValues = z.infer<typeof weddingInfoSchema>;
-type GalleryImageFormValues = z.infer<typeof galleryImageSchema>;
+type QuoteFormValues = z.infer<typeof quoteSchema>;
 
 
 // --- Reply Dialog Component ---
@@ -388,18 +410,19 @@ function GuestbookContent({
 }
 
 // --- FileUploader Component ---
-function FileUploader({ form, fieldName, label, accept }: { form: any; fieldName: keyof WeddingInfoFormValues; label: string; accept: string; }) {
+function FileUploader({ onUploadSuccess, label, accept, isUploading, directory }: { onUploadSuccess: (filePath: string) => void; label: string; accept: string; isUploading: boolean; directory?: string; }) {
     const { toast } = useToast();
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
         const formData = new FormData();
         formData.append('file', file);
+        if (directory) {
+            formData.append('directory', directory);
+        }
 
         try {
             const response = await fetch('/api/upload', {
@@ -413,51 +436,220 @@ function FileUploader({ form, fieldName, label, accept }: { form: any; fieldName
             }
 
             const { filePath } = await response.json();
-            form.setValue(fieldName, filePath, { shouldValidate: true, shouldDirty: true });
+            onUploadSuccess(filePath);
             toast({ title: 'Sukses', description: `File untuk ${label} berhasil diunggah.` });
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Error', description: error.message });
-        } finally {
-            setIsUploading(false);
         }
     };
     
-    const fieldValue = form.watch(fieldName);
-
     return (
-        <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-                <div className="flex items-center gap-4">
-                    <Input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept={accept}
-                    />
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                    >
-                        <Upload className="mr-2 h-4 w-4" />
-                        {isUploading ? 'Mengunggah...' : 'Unggah File'}
-                    </Button>
-                    {fieldValue && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <ImageIcon className="h-4 w-4" />
-                            <span className="truncate max-w-[200px]">{typeof fieldValue === 'string' ? fieldValue.split('/').pop() : ''}</span>
-                        </div>
-                    )}
-                </div>
-            </FormControl>
-            <FormDescription>Gunakan file {accept}.</FormDescription>
-            <FormMessage />
-        </FormItem>
+        <div className="space-y-2">
+           <Label>{label}</Label>
+            <div className="flex items-center gap-4">
+                <Input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept={accept}
+                    disabled={isUploading}
+                />
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {isUploading ? 'Mengunggah...' : 'Pilih File'}
+                </Button>
+                <FormDescription>Gunakan file {accept}.</FormDescription>
+            </div>
+        </div>
     );
 }
+
+function QuoteForm({ onFormSubmit, quote }: { onFormSubmit: () => void; quote?: QuoteType }) {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
+    const isEditMode = !!quote;
+
+    const form = useForm<QuoteFormValues>({
+        resolver: zodResolver(quoteSchema),
+        defaultValues: quote ? { imageUrl: quote.imageUrl, text: quote.text } : { imageUrl: '', text: '' },
+    });
+
+    useEffect(() => {
+        if (quote) {
+            form.reset({ imageUrl: quote.imageUrl, text: quote.text });
+        }
+    }, [quote, form]);
+
+    const handleFileUpload = (filePath: string) => {
+        form.setValue('imageUrl', filePath, { shouldValidate: true, shouldDirty: true });
+        setIsUploading(false);
+    };
+
+    const onSubmit = async (data: QuoteFormValues) => {
+        try {
+            if (isEditMode) {
+                await updateDoc(doc(db, `invitations/${INVITATION_ID}/quotes`, quote.id), { ...data });
+                logActivity(user, `Memperbarui quote: ${data.text.substring(0, 20)}...`);
+            } else {
+                await addDoc(collection(db, `invitations/${INVITATION_ID}/quotes`), { ...data, createdAt: serverTimestamp() });
+                logActivity(user, `Menambahkan quote baru: ${data.text.substring(0, 20)}...`);
+            }
+            toast({ title: 'Sukses!', description: 'Quote telah disimpan.' });
+            onFormSubmit();
+        } catch (error) {
+            console.error("Gagal menyimpan quote:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Gagal menyimpan quote.' });
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FileUploader
+                    onUploadSuccess={handleFileUpload}
+                    label="Unggah Gambar"
+                    accept="image/png, image/jpeg, image/webp"
+                    isUploading={isUploading}
+                />
+                {form.watch('imageUrl') && (
+                    <div className="relative aspect-video w-full rounded-md overflow-hidden border">
+                        <Image src={form.watch('imageUrl')!} alt="Preview" layout="fill" objectFit="cover" />
+                    </div>
+                )}
+                <FormField
+                    control={form.control}
+                    name="text"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Teks Kutipan</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="Tuliskan kutipan Anda di sini..." {...field} rows={4} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
+                    {form.formState.isSubmitting ? 'Menyimpan...' : 'Simpan Quote'}
+                </Button>
+            </form>
+        </Form>
+    );
+}
+
+// --- Quote Section Tab Component ---
+function QuoteContent() {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [quotes, setQuotes] = useState<QuoteType[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingQuote, setEditingQuote] = useState<QuoteType | undefined>();
+
+    useEffect(() => {
+        const q = query(collection(db, `invitations/${INVITATION_ID}/quotes`), orderBy("createdAt", "asc"));
+        const unsub = onSnapshot(q, (snapshot) => {
+            const fetchedQuotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuoteType));
+            setQuotes(fetchedQuotes);
+            setIsLoading(false);
+        });
+        return () => unsub();
+    }, []);
+
+    const handleEditClick = (quote: QuoteType) => {
+        setEditingQuote(quote);
+        setIsFormOpen(true);
+    };
+
+    const handleAddNewClick = () => {
+        setEditingQuote(undefined);
+        setIsFormOpen(true);
+    };
+    
+    const handleDeleteQuote = async (quoteId: string) => {
+        try {
+            await deleteDoc(doc(db, `invitations/${INVITATION_ID}/quotes`, quoteId));
+            logActivity(user, `Menghapus quote (ID: ${quoteId})`);
+            toast({ title: 'Quote Dihapus' });
+        } catch (error) {
+            console.error("Gagal menghapus quote:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Gagal menghapus quote.' });
+        }
+    };
+
+
+    return (
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Manajemen Quote</h3>
+                    <Button onClick={handleAddNewClick} size="sm"><PlusCircle className="mr-2 h-4 w-4"/> Tambah Quote Baru</Button>
+                </div>
+                {isLoading ? (
+                    <p>Memuat...</p>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Gambar</TableHead>
+                                <TableHead>Kutipan</TableHead>
+                                <TableHead className="text-right">Aksi</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {quotes.length > 0 ? quotes.map((quote) => (
+                                <TableRow key={quote.id}>
+                                    <TableCell>
+                                        <div className="relative w-24 h-16 rounded-md overflow-hidden">
+                                            <Image src={quote.imageUrl} alt="Quote" layout="fill" objectFit="cover" />
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="max-w-xs truncate italic">"{quote.text}"</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(quote)}><Edit className="h-4 w-4"/></Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4"/></Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Hapus Quote Ini?</AlertDialogTitle>
+                                                    <AlertDialogDescription>Tindakan ini tidak dapat dibatalkan.</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteQuote(quote.id)}>Hapus</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            )) : (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center h-24">Belum ada quote.</TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                )}
+            </div>
+             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{editingQuote ? 'Ubah Quote' : 'Tambah Quote Baru'}</DialogTitle>
+                </DialogHeader>
+                <QuoteForm onFormSubmit={() => setIsFormOpen(false)} quote={editingQuote} />
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 
 // --- Settings Tab Component ---
 function SettingsContent({
@@ -467,6 +659,9 @@ function SettingsContent({
     weddingInfo: Partial<WeddingInfo>;
     onSave: (data: WeddingInfoFormValues) => void;
 }) {
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
+
     const form = useForm<WeddingInfoFormValues>({
         resolver: zodResolver(weddingInfoSchema),
         defaultValues: {
@@ -490,15 +685,25 @@ function SettingsContent({
             backgroundMusicUrl: '',
             invitedFamilies: [],
             coverImageUrl: '',
-            flowerFrameTopLeftUrl: '',
-            flowerFrameTopRightUrl: '',
-            flowerFrameBottomLeftUrl: '',
-            flowerFrameBottomRightUrl: '',
-            innerFrameTopRightUrl: '',
-            innerFrameBottomLeftUrl: '',
             coverOpeningImageUrl: '',
+            mainBackgroundUrl: '',
+            dividerOrnamentUrl: '',
+            flowerAsset1Url: '',
+            flowerAsset2Url: '',
+            flowerAsset3Url: '',
+            flowerAsset4Url: '',
+            flowerAsset5Url: '',
             storyTimeline: [],
             coverFont: 'serif',
+            countdownTargetDate: '',
+            bankName: '',
+            accountNumber: '',
+            accountHolderName: '',
+            danaName: '',
+            danaNumber: '',
+            danaQrCodeUrl: '',
+            danaLogoUrl: '',
+            giftThankYouMessage: 'Terima kasih atas gift yang telah diberikan semoga Alloh membalas kebaikan',
         },
     });
 
@@ -508,6 +713,11 @@ function SettingsContent({
     });
     
     const [invitedFamiliesText, setInvitedFamiliesText] = useState('');
+    
+    const handleFileUpload = (fieldName: keyof WeddingInfoFormValues) => (filePath: string) => {
+      form.setValue(fieldName, filePath, { shouldValidate: true, shouldDirty: true });
+      setIsUploading(false);
+    };
 
     useEffect(() => {
         const fullWeddingInfo = {
@@ -550,11 +760,13 @@ function SettingsContent({
                             <FormItem><FormLabel>Bio Mempelai Pria</FormLabel><FormControl><Input placeholder="Putra dari Bapak & Ibu..." {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md">
-                           <FileUploader form={form} fieldName="brideCoverPhotoUrl" label="Foto Cover Mempelai Wanita" accept="image/png, image/jpeg" />
-                           <FileUploader form={form} fieldName="groomCoverPhotoUrl" label="Foto Cover Mempelai Pria" accept="image/png, image/jpeg" />
+                           <FileUploader onUploadSuccess={handleFileUpload('brideCoverPhotoUrl')} label="Foto Mempelai Wanita" accept="image/png, image/jpeg" isUploading={isUploading} />
+                           <FileUploader onUploadSuccess={handleFileUpload('groomCoverPhotoUrl')} label="Foto Mempelai Pria" accept="image/png, image/jpeg" isUploading={isUploading} />
                         </div>
-                        <FileUploader form={form} fieldName="brideStoryUrl" label="Video Story Mempelai Wanita" accept=".mp4,video/mp4" />
-                        <FileUploader form={form} fieldName="groomStoryUrl" label="Video Story Mempelai Pria" accept=".mp4,video/mp4" />
+                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md">
+                           <FileUploader onUploadSuccess={handleFileUpload('brideStoryUrl')} label="Video Story Mempelai Wanita" accept="video/mp4" isUploading={isUploading} />
+                           <FileUploader onUploadSuccess={handleFileUpload('groomStoryUrl')} label="Video Story Mempelai Pria" accept="video/mp4" isUploading={isUploading} />
+                        </div>
                     </div>
                 </div>
                 <Separator />
@@ -637,23 +849,55 @@ function SettingsContent({
                     </div>
                 </div>
                 <Separator />
+                 <div>
+                    <h3 className="text-lg font-medium">Amplop Digital</h3>
+                    <div className="space-y-4 mt-2 p-4 border rounded-lg">
+                        <h4 className="font-semibold text-md">Transfer Bank</h4>
+                        <FormField control={form.control} name="bankName" render={({ field }) => (
+                            <FormItem><FormLabel>Nama Bank</FormLabel><FormControl><Input placeholder="cth., Bank Central Asia (BCA)" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="accountNumber" render={({ field }) => (
+                            <FormItem><FormLabel>Nomor Rekening</FormLabel><FormControl><Input placeholder="1234567890" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="accountHolderName" render={({ field }) => (
+                            <FormItem><FormLabel>Nama Pemilik Rekening</FormLabel><FormControl><Input placeholder="A/n John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                    <div className="space-y-4 mt-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold text-md">E-Wallet (DANA)</h4>
+                        <FileUploader onUploadSuccess={handleFileUpload('danaLogoUrl')} label="Gambar Logo DANA (PNG)" accept="image/png" isUploading={isUploading} />
+                        <FormField control={form.control} name="danaName" render={({ field }) => (
+                            <FormItem><FormLabel>Nama Akun DANA</FormLabel><FormControl><Input placeholder="A/n John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="danaNumber" render={({ field }) => (
+                            <FormItem><FormLabel>Nomor DANA</FormLabel><FormControl><Input placeholder="081234567890" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                         <FileUploader onUploadSuccess={handleFileUpload('danaQrCodeUrl')} label="Gambar QR Code DANA" accept="image/png, image/jpeg" isUploading={isUploading} />
+                    </div>
+                     <div className="space-y-4 mt-4">
+                        <FormField control={form.control} name="giftThankYouMessage" render={({ field }) => (
+                            <FormItem><FormLabel>Pesan Terima Kasih</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+                </div>
+                <Separator />
                 <div>
                     <h3 className="text-lg font-medium">Tampilan Undangan</h3>
                      <div className="space-y-4 mt-2">
-                        <FileUploader form={form} fieldName="coverImageUrl" label="Gambar Latar Cover" accept="image/png, image/jpeg" />
-                        <FileUploader form={form} fieldName="coverOpeningImageUrl" label="Gambar Pembuka Cover (di atas teks)" accept="image/png, image/webp" />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-lg">
-                            <h4 className="md:col-span-2 text-md font-medium">Bingkai Bunga Cover</h4>
-                            <FileUploader form={form} fieldName="flowerFrameTopLeftUrl" label="Bingkai Kiri Atas" accept="image/png, image/webp" />
-                            <FileUploader form={form} fieldName="flowerFrameTopRightUrl" label="Bingkai Kanan Atas" accept="image/png, image/webp" />
-                            <FileUploader form={form} fieldName="flowerFrameBottomLeftUrl" label="Bingkai Kiri Bawah" accept="image/png, image/webp" />
-                            <FileUploader form={form} fieldName="flowerFrameBottomRightUrl" label="Bingkai Kanan Bawah" accept="image/png, image/webp" />
+                        <FileUploader onUploadSuccess={handleFileUpload('coverImageUrl')} label="Gambar Latar Sampul" accept="image/png, image/jpeg" isUploading={isUploading} />
+                        <FileUploader onUploadSuccess={handleFileUpload('mainBackgroundUrl')} label="Gambar Latar Utama (Dalam Undangan)" accept="image/png, image/jpeg" isUploading={isUploading} />
+                        <FileUploader onUploadSuccess={handleFileUpload('dividerOrnamentUrl')} label="Ornamen Pembatas Bagian" accept="image/png, image/webp" isUploading={isUploading} />
+                        <FileUploader onUploadSuccess={handleFileUpload('coverOpeningImageUrl')} label="Gambar Ornament Pembuka (PNG)" accept="image/png, image/webp" isUploading={isUploading} />
+                        <Separator />
+                        <div className="p-4 border rounded-lg space-y-4">
+                            <h4 className="font-semibold text-md">Aset Bingkai Bunga (PNG Transparan)</h4>
+                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset1Url')} label="Aset Bunga 1 (Kiri Atas)" accept="image/png" isUploading={isUploading} />
+                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset2Url')} label="Aset Bunga 2 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
+                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset3Url')} label="Aset Bunga 3 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
+                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset4Url')} label="Aset Bunga 4 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
+                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset5Url')} label="Aset Bunga 5 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-lg">
-                             <h4 className="md:col-span-2 text-md font-medium">Tampilan Bingkai Dalam Undangan</h4>
-                            <FileUploader form={form} fieldName="innerFrameTopRightUrl" label="Bingkai Dalam - Kanan Atas" accept="image/png, image/webp" />
-                            <FileUploader form={form} fieldName="innerFrameBottomLeftUrl" label="Bingkai Dalam - Kiri Bawah" accept="image/png, image/webp" />
-                        </div>
+                        <Separator />
                          <FormField
                             control={form.control}
                             name="coverFont"
@@ -672,6 +916,45 @@ function SettingsContent({
                                             <SelectItem value="Sacramento">Sacramento (Santai)</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="countdownTargetDate"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Tanggal Target Hitung Mundur</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full pl-3 text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                            >
+                                            {field.value ? (
+                                                formatDate(new Date(field.value), "PPP", { locale: id })
+                                            ) : (
+                                                <span>Pilih tanggal</span>
+                                            )}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value ? new Date(field.value) : undefined}
+                                            onSelect={(date) => field.onChange(date?.toISOString())}
+                                            initialFocus
+                                        />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormDescription>Kosongkan jika tidak ingin menampilkan hitung mundur.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -697,7 +980,7 @@ function SettingsContent({
                                 </FormItem>
                             )}
                         />
-                         <FileUploader form={form} fieldName="backgroundMusicUrl" label="File Musik Latar" accept=".mp3, audio/mpeg" />
+                         <FileUploader onUploadSuccess={handleFileUpload('backgroundMusicUrl')} label="File Musik Latar" accept=".mp3, audio/mpeg" isUploading={isUploading} />
                     </div>
                 </div>
                 <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -706,137 +989,6 @@ function SettingsContent({
             </form>
         </Form>
       </ScrollArea>
-    );
-}
-
-// --- Gallery Tab Component ---
-function GalleryContent() {
-    const { user } = useAuth();
-    const { toast } = useToast();
-    const [images, setImages] = useState<GalleryImage[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isUploading, setIsUploading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        const q = query(collection(db, `invitations/${INVITATION_ID}/gallery_images`), orderBy("createdAt", "asc"));
-        const unsub = onSnapshot(q, (snapshot) => {
-            const fetchedImages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage));
-            setImages(fetchedImages);
-            setIsLoading(false);
-        });
-        return () => unsub();
-    }, []);
-
-    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Gagal mengunggah file.');
-            
-            const { filePath } = await response.json();
-
-            await addDoc(collection(db, `invitations/${INVITATION_ID}/gallery_images`), {
-                imageUrl: filePath,
-                createdAt: serverTimestamp(),
-            });
-
-            logActivity(user, `Menambahkan gambar baru ke galeri.`);
-            toast({ title: 'Gambar Ditambahkan', description: 'Gambar baru berhasil ditambahkan ke galeri.' });
-            
-        } catch (error) {
-            console.error("Gagal menambahkan gambar:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Gagal menambahkan gambar.' });
-        } finally {
-            setIsUploading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        }
-    };
-
-    const handleDeleteImage = async (imageId: string) => {
-        try {
-            await deleteDoc(doc(db, `invitations/${INVITATION_ID}/gallery_images`, imageId));
-            logActivity(user, `Menghapus gambar dari galeri (ID: ${imageId}).`);
-            toast({ title: 'Gambar Dihapus', description: 'Gambar telah dihapus dari galeri.' });
-        } catch (error) {
-            console.error("Gagal menghapus gambar:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Gagal menghapus gambar.' });
-        }
-    };
-
-    return (
-        <ScrollArea className="h-[65vh] pr-4">
-            <div className="space-y-6">
-                <div className="p-4 border rounded-lg">
-                    <h3 className="text-lg font-medium mb-4">Tambah Gambar Baru</h3>
-                    <Input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileSelect}
-                        accept="image/png, image/jpeg, image/gif"
-                    />
-                    <Button 
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                    >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {isUploading ? 'Mengunggah...' : 'Pilih Gambar'}
-                    </Button>
-                     <p className="text-sm text-muted-foreground mt-2">Pilih gambar dari komputer Anda untuk diunggah.</p>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {isLoading ? (
-                        [...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-square w-full rounded-lg" />)
-                    ) : images.length > 0 ? (
-                        images.map(image => (
-                            <div key={image.id} className="relative group aspect-square">
-                                <Image
-                                    src={image.imageUrl}
-                                    alt="Gallery image"
-                                    fill
-                                    className="object-cover rounded-lg"
-                                />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="icon">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Hapus Gambar Ini?</AlertDialogTitle>
-                                                <AlertDialogDescription>Tindakan ini tidak dapat dibatalkan.</AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDeleteImage(image.id)}>Hapus</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="col-span-full text-center text-muted-foreground py-10">Galeri masih kosong.</p>
-                    )}
-                </div>
-            </div>
-        </ScrollArea>
     );
 }
 
@@ -1038,9 +1190,9 @@ export default function UpdAdminPage() {
                      <ShieldCheck className="h-4 w-4 mr-2" />
                     Moderasi ({pendingMessages.length})
                   </TabsTrigger>
-                  <TabsTrigger value="gallery">
-                     <ImageIcon className="h-4 w-4 mr-2" />
-                    Galeri
+                  <TabsTrigger value="quote">
+                     <Quote className="h-4 w-4 mr-2" />
+                    Quote
                   </TabsTrigger>
                   <TabsTrigger value="settings">
                      <Settings className="h-4 w-4 mr-2" />
@@ -1059,8 +1211,8 @@ export default function UpdAdminPage() {
                     onReply={openReplyDialog}
                   />
                 </TabsContent>
-                 <TabsContent value="gallery" className="mt-6">
-                    <GalleryContent />
+                <TabsContent value="quote" className="mt-6">
+                    <QuoteContent />
                 </TabsContent>
                 <TabsContent value="settings" className="mt-6">
                     <SettingsContent weddingInfo={weddingInfo} onSave={handleSaveSettings} />

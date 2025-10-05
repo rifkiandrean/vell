@@ -18,6 +18,8 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 groomName: data.groomName || 'Mempelai Pria',
                 brideBio: data.brideBio || '',
                 groomBio: data.groomBio || '',
+                brideCoverPhotoUrl: data.brideCoverPhotoUrl || '',
+                groomCoverPhotoUrl: data.groomCoverPhotoUrl || '',
                 brideStoryUrl: data.brideStoryUrl || '',
                 groomStoryUrl: data.groomStoryUrl || '',
                 ceremonyDate: data.ceremonyDate || '',
@@ -32,8 +34,25 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
                 backgroundMusicUrl: data.backgroundMusicUrl || '',
                 invitedFamilies: data.invitedFamilies || [],
                 coverImageUrl: data.coverImageUrl || '',
+                mainBackgroundUrl: data.mainBackgroundUrl || '',
+                dividerOrnamentUrl: data.dividerOrnamentUrl || '',
+                coverOpeningImageUrl: data.coverOpeningImageUrl || '',
+                flowerAsset1Url: data.flowerAsset1Url || '',
+                flowerAsset2Url: data.flowerAsset2Url || '',
+                flowerAsset3Url: data.flowerAsset3Url || '',
+                flowerAsset4Url: data.flowerAsset4Url || '',
+                flowerAsset5Url: data.flowerAsset5Url || '',
                 storyTimeline: data.storyTimeline || [],
                 coverFont: data.coverFont || 'serif',
+                countdownTargetDate: data.countdownTargetDate || '',
+                bankName: data.bankName || '',
+                accountNumber: data.accountNumber || '',
+                accountHolderName: data.accountHolderName || '',
+                danaName: data.danaName || '',
+                danaNumber: data.danaNumber || '',
+                danaQrCodeUrl: data.danaQrCodeUrl || '',
+                danaLogoUrl: data.danaLogoUrl || '',
+                giftThankYouMessage: data.giftThankYouMessage || 'Terima kasih atas perhatiannya.',
             };
         }
     } catch (error) {
@@ -45,6 +64,8 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         groomName: "Pria",
         brideBio: "",
         groomBio: "",
+        brideCoverPhotoUrl: "",
+        groomCoverPhotoUrl: "",
         brideStoryUrl: "",
         groomStoryUrl: "",
         ceremonyDate: "Segera Hadir",
@@ -59,8 +80,25 @@ async function getWeddingInfo(): Promise<WeddingInfo> {
         backgroundMusicUrl: "",
         invitedFamilies: [],
         coverImageUrl: "",
+        mainBackgroundUrl: "",
+        dividerOrnamentUrl: "",
+        coverOpeningImageUrl: "",
+        flowerAsset1Url: '',
+        flowerAsset2Url: '',
+        flowerAsset3Url: '',
+        flowerAsset4Url: '',
+        flowerAsset5Url: '',
         storyTimeline: [],
         coverFont: 'serif',
+        countdownTargetDate: '',
+        bankName: '',
+        accountNumber: '',
+        accountHolderName: '',
+        danaName: '',
+        danaNumber: '',
+        danaQrCodeUrl: '',
+        danaLogoUrl: '',
+        giftThankYouMessage: 'Terima kasih atas perhatiannya.',
     };
 }
 
@@ -81,6 +119,11 @@ export default async function UpdLayout({
 
   return (
     <main className="antialiased font-sans">
+        <Head>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+        </Head>
         {children}
     </main>
   );
