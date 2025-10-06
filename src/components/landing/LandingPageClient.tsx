@@ -17,7 +17,6 @@ import { useAuth } from '@/context/AuthContext';
 import * as LucideIcons from 'lucide-react';
 import { Icons } from '../icons';
 import { cn } from '@/lib/utils';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 // Create a client-side compatible Post type where Timestamps are strings
 export type ClientPost = Omit<Post, 'createdAt' | 'updatedAt'> & {
@@ -40,9 +39,9 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
     setIsClient(true);
   }, []);
 
-  const product1IconUrl = content.product1IconUrl ? transformGoogleDriveUrl(content.product1IconUrl) : null;
-  const product2IconUrl = content.product2IconUrl ? transformGoogleDriveUrl(content.product2IconUrl) : null;
-  const vellLogoUrl = content.vellLogoUrl ? transformGoogleDriveUrl(content.vellLogoUrl) : null;
+  const product1IconUrl = content.product1IconUrl || null;
+  const product2IconUrl = content.product2IconUrl || null;
+  const vellLogoUrl = content.vellLogoUrl || null;
   
   const packageColors = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
 
@@ -101,7 +100,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                         <CarouselItem key={slide.id}>
                             <div className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center">
                                 <Image
-                                    src={transformGoogleDriveUrl(slide.imageUrl)}
+                                    src={slide.imageUrl}
                                     alt={slide.title}
                                     fill
                                     className="object-cover brightness-50"
@@ -153,7 +152,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
                           <Card className="overflow-hidden h-full flex flex-row items-center transition-all group-hover:shadow-lg p-3 gap-3">
                               <div className="relative aspect-square w-16 h-16 rounded-md overflow-hidden shrink-0">
                                   <Image
-                                      src={transformGoogleDriveUrl(post.imageUrl) || 'https://picsum.photos/seed/news/150/150'}
+                                      src={post.imageUrl || 'https://picsum.photos/seed/news/150/150'}
                                       alt={post.title}
                                       fill
                                       className="object-cover"
@@ -305,7 +304,7 @@ export function LandingPageClient({ content, posts, heroSlides, pricingPackages 
             {socialLinks.map((link) => (
                 <Link key={link.name} href={link.url!} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline underline-offset-4" prefetch={false}>
                     <Image
-                        src={transformGoogleDriveUrl(link.iconUrl!)}
+                        src={link.iconUrl!}
                         alt={`${link.name} icon`}
                         width={24}
                         height={24}

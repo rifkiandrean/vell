@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from 'next/image';
@@ -9,7 +10,6 @@ import { CustomizationDialog } from './CustomizationDialog';
 import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 interface MenuItemCardProps {
   menuItem: MenuItem;
@@ -44,8 +44,6 @@ export function MenuItemCard({ menuItem }: MenuItemCardProps) {
     } else {
       imageUrl = ''; // Or a default fallback image URL
     }
-  } else {
-    imageUrl = transformGoogleDriveUrl(imageUrl);
   }
 
 

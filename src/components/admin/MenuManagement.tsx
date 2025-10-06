@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -30,7 +31,6 @@ import { Input } from '../ui/input';
 import * as XLSX from 'xlsx';
 import { useAuth } from '@/context/AuthContext';
 import { logActivity } from '@/lib/activity-log';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 const isValidUrl = (urlString: string) => {
   try {
@@ -268,7 +268,7 @@ export function MenuManagement() {
   
   const getImageUrl = (imageIdentifier: string) => {
     if (isValidUrl(imageIdentifier)) {
-      return transformGoogleDriveUrl(imageIdentifier);
+      return imageIdentifier;
     }
     const placeholder = PlaceHolderImages.find(p => p.id === imageIdentifier);
     return placeholder ? placeholder.imageUrl : ''; // Return a fallback or empty string

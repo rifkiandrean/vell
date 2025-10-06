@@ -156,7 +156,6 @@ const weddingInfoSchema = z.object({
   coverOpeningImageUrl: z.string().optional(),
   mainBackgroundUrl: z.string().optional(),
   dividerOrnamentUrl: z.string().optional(),
-  flowerAsset1Url: z.string().optional(),
   flowerAsset2Url: z.string().optional(),
   flowerAsset3Url: z.string().optional(),
   flowerAsset4Url: z.string().optional(),
@@ -688,7 +687,6 @@ function SettingsContent({
             coverOpeningImageUrl: '',
             mainBackgroundUrl: '',
             dividerOrnamentUrl: '',
-            flowerAsset1Url: '',
             flowerAsset2Url: '',
             flowerAsset3Url: '',
             flowerAsset4Url: '',
@@ -891,7 +889,6 @@ function SettingsContent({
                         <Separator />
                         <div className="p-4 border rounded-lg space-y-4">
                             <h4 className="font-semibold text-md">Aset Bingkai Bunga (PNG Transparan)</h4>
-                            <FileUploader onUploadSuccess={handleFileUpload('flowerAsset1Url')} label="Aset Bunga 1 (Kiri Atas)" accept="image/png" isUploading={isUploading} />
                             <FileUploader onUploadSuccess={handleFileUpload('flowerAsset2Url')} label="Aset Bunga 2 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
                             <FileUploader onUploadSuccess={handleFileUpload('flowerAsset3Url')} label="Aset Bunga 3 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />
                             <FileUploader onUploadSuccess={handleFileUpload('flowerAsset4Url')} label="Aset Bunga 4 (Tumpukan Kanan Atas)" accept="image/png" isUploading={isUploading} />

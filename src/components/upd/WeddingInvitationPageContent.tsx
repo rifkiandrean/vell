@@ -114,59 +114,53 @@ function FloatingNav({ onScroll, onToggleMusic, isMusicPlaying }: { onScroll: (i
 
 const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
     const [isClient, setIsClient] = useState(false);
-    
-    useEffect(() => {
+    const [timeLeft, setTimeLeft] = useState({
+        Hari: '00',
+        Jam: '00',
+        Menit: '00',
+        Detik: '00',
+    });
+
+     useEffect(() => {
         setIsClient(true);
     }, []);
 
     const calculateTimeLeft = () => {
         if (!targetDate) return {};
         const difference = +new Date(targetDate) - +new Date();
-        let timeLeft = {};
+        let newTimeLeft = {};
 
         if (difference > 0) {
-            timeLeft = {
+            newTimeLeft = {
                 Hari: Math.floor(difference / (1000 * 60 * 60 * 24)),
                 Jam: Math.floor((difference / (1000 * 60 * 60)) % 24),
                 Menit: Math.floor((difference / 1000 / 60) % 60),
                 Detik: Math.floor((difference / 1000) % 60),
             };
         }
-
-        return timeLeft;
+        return newTimeLeft;
     };
-
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
+    
     useEffect(() => {
         if (!isClient) return;
         
-        const timer = setTimeout(() => {
-            setTimeLeft(calculateTimeLeft());
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft() as any);
         }, 1000);
 
-        return () => clearTimeout(timer);
-    });
+        return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isClient, targetDate]);
 
     if (!isClient) {
         return (
              <div className="flex justify-center gap-4 md:gap-8 my-8">
-                <div className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
-                    <span className="text-2xl md:text-4xl font-bold">--</span>
-                    <span className="text-xs uppercase">Hari</span>
-                </div>
-                 <div className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
-                    <span className="text-2xl md:text-4xl font-bold">--</span>
-                    <span className="text-xs uppercase">Jam</span>
-                </div>
-                 <div className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
-                    <span className="text-2xl md:text-4xl font-bold">--</span>
-                    <span className="text-xs uppercase">Menit</span>
-                </div>
-                 <div className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
-                    <span className="text-2xl md:text-4xl font-bold">--</span>
-                    <span className="text-xs uppercase">Detik</span>
-                </div>
+                {Object.keys(timeLeft).map((interval) => (
+                     <div key={interval} className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
+                        <span className="text-2xl md:text-4xl font-bold">00</span>
+                        <span className="text-xs uppercase">{interval}</span>
+                    </div>
+                ))}
             </div>
         );
     }
@@ -179,7 +173,7 @@ const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
 
         timerComponents.push(
             <div key={interval} className="flex flex-col items-center p-2 bg-background/20 rounded-lg w-20">
-                <span className="text-2xl md:text-4xl font-bold">{(timeLeft as any)[interval]}</span>
+                <span className="text-2xl md:text-4xl font-bold">{String((timeLeft as any)[interval]).padStart(2, '0')}</span>
                 <span className="text-xs uppercase">{interval}</span>
             </div>
         );
@@ -232,7 +226,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                 const element = document.documentElement;
                 if (element.requestFullscreen) {
                     element.requestFullscreen().catch(err => {
-                        console.log(`Gagal mengaktifkan mode layar penuh: \'\'\'err.message\'\'\' (\'\'\'err.name\'\'\')`);
+                        console.log(`Gagal mengaktifkan mode layar penuh: '${err.message}' ('${err.name}')`);
                     });
                 }
             }
@@ -247,7 +241,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
       audioRef.current.loop = true;
     }
     if (audioRef.current && initialWeddingInfo.isMusicEnabled && initialWeddingInfo.backgroundMusicUrl) {
-        audioRef.current.src = initialWeddingInfo.backgroundMusicUrl || '/default-music.mp3';
+        audioRef.current.src = initialWeddingInfo.backgroundMusicUrl;
     }
   }, [initialWeddingInfo]);
 
@@ -305,6 +299,9 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
   const handleOpenInvitation = () => {
     setIsOpened(true);
     if (weddingInfo.isMusicEnabled && audioRef.current) {
+        if(audioRef.current.src !== weddingInfo.backgroundMusicUrl) {
+            audioRef.current.src = weddingInfo.backgroundMusicUrl!;
+        }
         audioRef.current.play().catch(e => console.error("Gagal memulai audio:", e));
         setIsMusicPlaying(true);
     }
@@ -398,30 +395,49 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
             )}
             
             {/* Ornament Layers */}
-            {weddingInfo.flowerAsset1Url && (
-                <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-1/3 md:w-1/4 animate-sway-1">
-                    <Image src={weddingInfo.flowerAsset1Url} alt="Flower 1" width={400} height={400} className="w-full h-auto" />
-                </motion.div>
-            )}
-            {/* Top Right Flower Stack */}
-            <div className="absolute top-0 right-0 w-1/3 md:w-1/4 h-auto">
-                {weddingInfo.flowerAsset2Url && (
-                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full animate-sway-1">
+             {/* Top Left Flower Stack */}
+            <div className="absolute top-0 left-0 w-1/3 md:w-1/4 h-auto transform -scale-x-100">
+                 {weddingInfo.flowerAsset2Url && (
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-2">
                         <Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset3Url && (
-                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full opacity-90 mix-blend-lighten animate-sway-2">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-3">
                         <Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset4Url && (
-                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full opacity-80 mix-blend-lighten animate-sway-3">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-4">
                         <Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
-                 {weddingInfo.flowerAsset5Url && (
-                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full opacity-70 mix-blend-lighten animate-sway-4">
+                {weddingInfo.flowerAsset5Url && (
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full">
+                        <Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" />
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Top Right Flower Stack */}
+            <div className="absolute top-0 right-0 w-1/3 md:w-1/4 h-auto">
+                 {weddingInfo.flowerAsset2Url && (
+                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full animate-sway-2">
+                        <Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" />
+                    </motion.div>
+                )}
+                {weddingInfo.flowerAsset3Url && (
+                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full animate-sway-3">
+                        <Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" />
+                    </motion.div>
+                )}
+                {weddingInfo.flowerAsset4Url && (
+                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full animate-sway-4">
+                        <Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" />
+                    </motion.div>
+                )}
+                {weddingInfo.flowerAsset5Url && (
+                    <motion.div initial={{ opacity: 0, x: 50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 right-0 w-full">
                         <Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
@@ -430,12 +446,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
             {/* Content Layer */}
             <div className="relative z-10 flex h-full w-full flex-col items-center p-8">
                 
-                <div className="flex-grow flex flex-col justify-end text-center pb-8">
+                 <div className="flex-grow flex flex-col justify-end text-center pb-8">
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 1.1, duration: 0.8 }}
-                      className="mb-4"
+                      className="mb-4 sm:-mt-8"
                     >
                         {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="Ornament" width={700} height={700} className="mx-auto" />}
                     </motion.div>
@@ -452,11 +468,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.7, duration: 0.8 }}
-                        className="text-upd-primary"
+                        className="text-upd-primary text-5xl md:text-6xl flex flex-col items-center"
+                        style={coverFontStyle}
                     >
-                        <h1 className="text-5xl" style={coverFontStyle}>
-                            {weddingInfo.brideName} &amp; {weddingInfo.groomName}
-                        </h1>
+                        <span>{weddingInfo.brideName}</span>
+                        <span className="text-4xl my-2">&amp;</span>
+                        <span>{weddingInfo.groomName}</span>
                     </motion.div>
                     
                     <GuestNameDisplay guest={guest} fontStyle={coverFontStyle} />
@@ -487,12 +504,34 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
             <div className="fixed inset-0 z-0">
                 {mainBgImage && <Image src={mainBgImage} alt="background" fill className="object-cover" />}
             </div>
+
+            {/* Ornament Layers for Inner Section */}
+            {isOpened && (
+              <>
+                <div className="fixed top-0 left-0 w-1/3 md:w-1/4 h-auto z-20 pointer-events-none transform -scale-x-100">
+                    {weddingInfo.flowerAsset2Url && <div className="absolute top-0 left-0 w-full animate-sway-2"><Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset3Url && <div className="absolute top-0 left-0 w-full animate-sway-3"><Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset4Url && <div className="absolute top-0 left-0 w-full animate-sway-4"><Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset5Url && <div className="absolute top-0 left-0 w-full"><Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" /></div>}
+                </div>
+                <div className="fixed top-0 right-0 w-1/3 md:w-1/4 h-auto z-20 pointer-events-none">
+                    {weddingInfo.flowerAsset2Url && <div className="absolute top-0 right-0 w-full animate-sway-2"><Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset3Url && <div className="absolute top-0 right-0 w-full animate-sway-3"><Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset4Url && <div className="absolute top-0 right-0 w-full animate-sway-4"><Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" /></div>}
+                    {weddingInfo.flowerAsset5Url && <div className="absolute top-0 right-0 w-full"><Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" /></div>}
+                </div>
+              </>
+            )}
             
             <div className="relative z-10">
                 <header className="min-h-screen flex flex-col items-center justify-center text-center p-4 text-foreground">
                     <AnimatedSection id="header-content" className="w-full">
                         <p className="tracking-widest">The Wedding Of</p>
-                        <h1 className="text-5xl md:text-8xl my-4" style={{ fontFamily: "'Great Vibes', cursive" }}>{weddingInfo.brideName} &amp; {weddingInfo.groomName}</h1>
+                        <h1 className="text-5xl md:text-8xl my-4 flex flex-col items-center" style={{ fontFamily: "'Great Vibes', cursive" }}>
+                           <span>{weddingInfo.brideName}</span>
+                           <span className="text-4xl md:text-6xl my-2">&amp;</span>
+                           <span>{weddingInfo.groomName}</span>
+                        </h1>
                         <p className="text-lg">{weddingInfo.receptionDate}</p>
                         {isClient && weddingInfo.countdownTargetDate && <CountdownTimer targetDate={weddingInfo.countdownTargetDate} />}
                         <div className="flex items-center justify-center gap-4 mt-8 animate-pulse-heart">
@@ -660,6 +699,18 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                             {weddingInfo.giftThankYouMessage}
                         </p>
                     </AnimatedSection>
+                    
+                    {weddingInfo.invitedFamilies && weddingInfo.invitedFamilies.length > 0 && (
+                        <AnimatedSection id="families" className="text-center">
+                            {weddingInfo.dividerOrnamentUrl && <Image src={weddingInfo.dividerOrnamentUrl} alt="ornament" width={100} height={100} className="mx-auto mb-8" />}
+                            <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ fontFamily: "'Great Vibes', cursive" }}>Turut Mengundang</h2>
+                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+                                {weddingInfo.invitedFamilies.map((family, index) => (
+                                    <p key={index} className="text-lg text-muted-foreground">{family}</p>
+                                ))}
+                            </div>
+                        </AnimatedSection>
+                    )}
 
                     <AnimatedSection id="guestbook" className="text-center">
                         {weddingInfo.dividerOrnamentUrl && <Image src={weddingInfo.dividerOrnamentUrl} alt="ornament" width={100} height={100} className="mx-auto mb-8" />}

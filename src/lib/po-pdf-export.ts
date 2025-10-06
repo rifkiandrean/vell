@@ -4,7 +4,6 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 import type { PurchaseOrder, Vendor, CompanyInfo } from './types';
 
 // Extend jsPDF type to include autoTable
@@ -143,8 +142,7 @@ export const exportPOToPDF = async ({ po, vendor, companyInfo }: ExportPOParams)
     // SPV Signature
     if (companyInfo.spvSignatureUrl) {
       try {
-        const spvSignatureUrl = transformGoogleDriveUrl(companyInfo.spvSignatureUrl);
-        const spvSignatureBase64 = await imageUrlToBase64(spvSignatureUrl);
+        const spvSignatureBase64 = await imageUrlToBase64(companyInfo.spvSignatureUrl);
         doc.text('Diketahui oleh,', spvX, signatureY);
         doc.addImage(spvSignatureBase64, 'PNG', spvX, signatureY + 2, 40, 20); // Adjust size as needed
         doc.text('Spv F&B', spvX, signatureY + 28);
@@ -157,8 +155,7 @@ export const exportPOToPDF = async ({ po, vendor, companyInfo }: ExportPOParams)
     // Manager Signature
     if (companyInfo.managerSignatureUrl) {
       try {
-        const managerSignatureUrl = transformGoogleDriveUrl(companyInfo.managerSignatureUrl);
-        const managerSignatureBase64 = await imageUrlToBase64(managerSignatureUrl);
+        const managerSignatureBase64 = await imageUrlToBase64(companyInfo.managerSignatureUrl);
         doc.text('Disetujui oleh,', managerX, signatureY);
         doc.addImage(managerSignatureBase64, 'PNG', managerX, signatureY + 2, 40, 20); // Adjust size as needed
         doc.text('Manajer', managerX, signatureY + 28);

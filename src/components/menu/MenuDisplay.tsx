@@ -18,7 +18,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 const getIconComponent = (iconName: string, fallback: React.ElementType = HelpCircle): React.ElementType => {
@@ -127,7 +126,7 @@ export function MenuDisplay({ shopStatus }: MenuDisplayProps) {
 
   const renderBanner = () => {
     if (promoSettings.promoBannerEnabled && promoSlides.length > 0) {
-        const staticBgUrl = promoSettings.promoBannerBackgroundUrl ? transformGoogleDriveUrl(promoSettings.promoBannerBackgroundUrl) : null;
+        const staticBgUrl = promoSettings.promoBannerBackgroundUrl || null;
         
         return (
             <div className="relative w-full mb-8 rounded-lg overflow-hidden shadow-lg">
@@ -145,7 +144,7 @@ export function MenuDisplay({ shopStatus }: MenuDisplayProps) {
                 >
                     <CarouselContent>
                         {promoSlides.map((slide) => {
-                            const productImageUrl = slide.productImageUrl ? transformGoogleDriveUrl(slide.productImageUrl) : null;
+                            const productImageUrl = slide.productImageUrl || null;
 
                             const BannerContent = (
                                 <div className="relative aspect-[3/1] w-full block">

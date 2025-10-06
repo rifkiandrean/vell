@@ -77,7 +77,6 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 // --- Data Types ---
@@ -716,7 +715,7 @@ function GalleryContent() {
                         images.map(image => (
                             <div key={image.id} className="relative group aspect-square">
                                 <Image
-                                    src={transformGoogleDriveUrl(image.imageUrl)}
+                                    src={image.imageUrl}
                                     alt="Gallery image"
                                     fill
                                     className="object-cover rounded-lg"

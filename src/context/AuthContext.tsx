@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -8,7 +9,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import type { CompanyInfo, LandingPageContent } from '@/lib/types';
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { transformGoogleDriveUrl } from '@/lib/google-drive';
 
 
 interface AuthContextType {
@@ -36,6 +36,9 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({ companyName: initialCompanyName, logoUrl: '', ersLogoUrl: '', websiteVersion: ''});
   const [landingPageContent, setLandingPageContent] = useState<LandingPageContent>({});
 
+  const transformGoogleDriveUrl = (url: string): string => {
+    return url;
+  }
   
   const login = (email: string, password: string) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -103,9 +106,9 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
     companyName: companyInfo.companyName,
     address: companyInfo.address,
     phone: companyInfo.phone,
-    logoUrl: transformGoogleDriveUrl(companyInfo.logoUrl || ''),
-    ersLogoUrl: transformGoogleDriveUrl(companyInfo.ersLogoUrl || ''),
-    vellLogoUrl: transformGoogleDriveUrl(landingPageContent.vellLogoUrl || ''),
+    logoUrl: companyInfo.logoUrl || '',
+    ersLogoUrl: companyInfo.ersLogoUrl || '',
+    vellLogoUrl: landingPageContent.vellLogoUrl || '',
     websiteVersion: companyInfo.websiteVersion,
     login,
     logout,
