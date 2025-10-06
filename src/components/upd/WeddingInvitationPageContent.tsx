@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply, Home, GalleryHorizontal, Music, VolumeX, X, User as CoupleIcon, CalendarDays, Album, ChevronDown, Send, ArrowRight, Copy, QrCode } from 'lucide-react';
+import { BookHeart, Calendar, Clock, Gift, Heart, Mail, MapPin, Users, MessageSquareReply, Home, GalleryHorizontal, Music, VolumeX, X, User as CoupleIcon, CalendarDays, Album, ChevronDown, Send, ArrowRight, Copy, QrCode, User } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
@@ -187,11 +187,15 @@ const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
 };
 
 
-export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes }: { initialWeddingInfo: WeddingInfo, initialQuotes: Quote[] }) {
+export function WeddingInvitationPageContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   
+  const [weddingInfo, setWeddingInfo] = useState<WeddingInfo | null>(null);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const invitationId = useMemo(() => {
     const pathSegments = pathname.split('/').filter(Boolean);
     if (pathSegments.length > 1 && pathSegments[0] === 'upd') {
@@ -210,8 +214,6 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
   const [guestbookSubmitted, setGuestbookSubmitted] = useState(false);
-  const [weddingInfo, setWeddingInfo] = useState<WeddingInfo>(initialWeddingInfo);
-  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -226,7 +228,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                 const element = document.documentElement;
                 if (element.requestFullscreen) {
                     element.requestFullscreen().catch(err => {
-                        console.log(`Gagal mengaktifkan mode layar penuh: \'\'\'err.message\'\'\' (\'\'\'err.name\'\'\')`);
+                        console.log(`Gagal mengaktifkan mode layar penuh: '${err.message}' ('${err.name}')`);
                     });
                 }
             }
@@ -234,20 +236,35 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
         requestFS();
     }, []);
 
+    useEffect(() => {
+        const unsubWeddingInfo = onSnapshot(doc(db, `invitations/${invitationId}/settings`, "weddingInfo"), (docSnap) => {
+            if (docSnap.exists()) {
+                setWeddingInfo(docSnap.data() as WeddingInfo);
+            }
+            setIsLoading(false);
+        });
+
+        const qQuotes = query(collection(db, `invitations/${invitationId}/quotes`), orderBy("createdAt", "asc"));
+        const unsubQuotes = onSnapshot(qQuotes, (snapshot) => {
+            setQuotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quote)));
+        });
+
+        return () => {
+            unsubWeddingInfo();
+            unsubQuotes();
+        };
+    }, [invitationId]);
+
   useEffect(() => {
-    setWeddingInfo(initialWeddingInfo);
+    if (!weddingInfo) return;
     if (typeof window !== 'undefined' && !audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.loop = true;
     }
-    if (audioRef.current && initialWeddingInfo.isMusicEnabled && initialWeddingInfo.backgroundMusicUrl) {
-        audioRef.current.src = initialWeddingInfo.backgroundMusicUrl || '/default-music.mp3';
+     if (audioRef.current && weddingInfo.isMusicEnabled && weddingInfo.backgroundMusicUrl) {
+        audioRef.current.src = weddingInfo.backgroundMusicUrl;
     }
-  }, [initialWeddingInfo]);
-
-   useEffect(() => {
-        setQuotes(initialQuotes);
-   }, [initialQuotes]);
+  }, [weddingInfo]);
 
 
   useEffect(() => {
@@ -287,7 +304,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
   };
 
   const toggleMusic = () => {
-    if (!audioRef.current || !weddingInfo.isMusicEnabled) return;
+    if (!audioRef.current || !weddingInfo?.isMusicEnabled) return;
     if (isMusicPlaying) {
       audioRef.current.pause();
     } else {
@@ -298,7 +315,10 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
 
   const handleOpenInvitation = () => {
     setIsOpened(true);
-    if (weddingInfo.isMusicEnabled && audioRef.current) {
+    if (weddingInfo?.isMusicEnabled && audioRef.current) {
+        if(audioRef.current.src !== weddingInfo.backgroundMusicUrl) {
+            audioRef.current.src = weddingInfo.backgroundMusicUrl!;
+        }
         audioRef.current.play().catch(e => console.error("Gagal memulai audio:", e));
         setIsMusicPlaying(true);
     }
@@ -348,6 +368,14 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
     navigator.clipboard.writeText(text);
     toast({ title: 'Berhasil Disalin', description: `Nomor ${type} berhasil disalin ke clipboard.` });
   };
+
+  if (isLoading) {
+    return <div className="fixed inset-0 flex items-center justify-center bg-background">Memuat undangan...</div>;
+  }
+
+  if (!weddingInfo) {
+    return <div className="fixed inset-0 flex items-center justify-center bg-background">Gagal memuat informasi undangan.</div>;
+  }
 
 
   const mainBgImage = weddingInfo.mainBackgroundUrl;
@@ -468,13 +496,9 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                         className="text-upd-primary text-5xl md:text-6xl flex flex-col items-center"
                         style={coverFontStyle}
                     >
-                        <span className="sm:hidden">{weddingInfo.brideName}</span>
-                        <span className="hidden sm:block">{weddingInfo.brideName}</span>
-
+                        <span>{weddingInfo.brideName}</span>
                         <span className="text-4xl my-2">&amp;</span>
-                        
-                        <span className="sm:hidden">{weddingInfo.groomName}</span>
-                        <span className="hidden sm:block">{weddingInfo.groomName}</span>
+                        <span>{weddingInfo.groomName}</span>
                     </motion.div>
                     
                     <GuestNameDisplay guest={guest} fontStyle={coverFontStyle} />
@@ -547,7 +571,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
 
                 <main className="max-w-4xl mx-auto px-4 py-16 sm:py-24 space-y-24">
                     <AnimatedSection id="couple" className="text-center relative">
-                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="ornament" width={700} height={700} className="mx-auto mb-8" />}
+                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="ornament" layout="responsive" width={700} height={700} className="mx-auto mb-8 w-[550px] h-[550px] md:w-[700px] md:h-[700px]" />}
                         <h3 className="text-4xl md:text-5xl mb-4 font-arabic" style={{fontFamily: "serif"}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</h3>
                         <h2 className="text-2xl md:text-3xl font-bold mt-8 mb-4" style={{ fontFamily: "'Great Vibes', cursive" }}>Assalamualaikum Warahmatullahi Wabarakatuh</h2>
                         <p className="text-muted-foreground max-w-2xl mx-auto mb-12">
@@ -705,9 +729,12 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                         <AnimatedSection id="families" className="text-center">
                             {weddingInfo.dividerOrnamentUrl && <Image src={weddingInfo.dividerOrnamentUrl} alt="ornament" width={100} height={100} className="mx-auto mb-8" />}
                             <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ fontFamily: "'Great Vibes', cursive" }}>Turut Mengundang</h2>
-                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
                                 {weddingInfo.invitedFamilies.map((family, index) => (
-                                    <p key={index} className="text-lg text-muted-foreground">{family}</p>
+                                    <div key={index} className="flex items-center justify-center gap-2">
+                                        <User className="h-5 w-5 text-muted-foreground" />
+                                        <p className="text-lg text-muted-foreground">{family}</p>
+                                    </div>
                                 ))}
                             </div>
                         </AnimatedSection>
@@ -778,6 +805,13 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                     <p className="text-muted-foreground max-w-2xl mx-auto">Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu.</p>
                     <p className="text-2xl mt-8" style={{ fontFamily: "'Great Vibes', cursive" }}>Wassalamualaikum Warahmatullahi Wabarakatuh</p>
                     <p className="text-4xl mt-6" style={{ fontFamily: "'Great Vibes', cursive" }}>{weddingInfo.brideName} &amp; {weddingInfo.groomName}</p>
+                    
+                    <div className="mt-16 text-xs text-muted-foreground">
+                        <p>&copy; 2024. Dibuat dengan ❤️ oleh</p>
+                        <a href="https://vell.com" target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">
+                            VELL
+                        </a>
+                    </div>
                 </footer>
             </div>
         </div>
