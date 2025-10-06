@@ -226,7 +226,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                 const element = document.documentElement;
                 if (element.requestFullscreen) {
                     element.requestFullscreen().catch(err => {
-                        console.log(`Gagal mengaktifkan mode layar penuh: '${err.message}' ('${err.name}')`);
+                        console.log(`Gagal mengaktifkan mode layar penuh: \'\'\'err.message\'\'\' (\'\'\'err.name\'\'\')`);
                     });
                 }
             }
@@ -241,7 +241,7 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
       audioRef.current.loop = true;
     }
     if (audioRef.current && initialWeddingInfo.isMusicEnabled && initialWeddingInfo.backgroundMusicUrl) {
-        audioRef.current.src = initialWeddingInfo.backgroundMusicUrl;
+        audioRef.current.src = initialWeddingInfo.backgroundMusicUrl || '/default-music.mp3';
     }
   }, [initialWeddingInfo]);
 
@@ -299,9 +299,6 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
   const handleOpenInvitation = () => {
     setIsOpened(true);
     if (weddingInfo.isMusicEnabled && audioRef.current) {
-        if(audioRef.current.src !== weddingInfo.backgroundMusicUrl) {
-            audioRef.current.src = weddingInfo.backgroundMusicUrl!;
-        }
         audioRef.current.play().catch(e => console.error("Gagal memulai audio:", e));
         setIsMusicPlaying(true);
     }
@@ -471,9 +468,13 @@ export function WeddingInvitationPageContent({ initialWeddingInfo, initialQuotes
                         className="text-upd-primary text-5xl md:text-6xl flex flex-col items-center"
                         style={coverFontStyle}
                     >
-                        <span>{weddingInfo.brideName}</span>
+                        <span className="sm:hidden">{weddingInfo.brideName}</span>
+                        <span className="hidden sm:block">{weddingInfo.brideName}</span>
+
                         <span className="text-4xl my-2">&amp;</span>
-                        <span>{weddingInfo.groomName}</span>
+                        
+                        <span className="sm:hidden">{weddingInfo.groomName}</span>
+                        <span className="hidden sm:block">{weddingInfo.groomName}</span>
                     </motion.div>
                     
                     <GuestNameDisplay guest={guest} fontStyle={coverFontStyle} />

@@ -47,18 +47,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     
     const playSound = useCallback(() => {
         if (notificationSettings.soundEnabled && audioRef.current) {
-            // Stop and reset current playback before starting a new one
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-            // The play() method returns a Promise, which can be useful for handling play/pause interruptions.
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    // This error can happen if the user interacts with the page before the audio is ready.
-                    // We can safely ignore it in most cases for notification sounds.
-                    console.info("Audio play interrupted:", error);
-                });
-            }
+            audioRef.current.play().catch(error => console.error("Audio play failed:", error));
         }
     }, [notificationSettings.soundEnabled]);
 
