@@ -228,7 +228,7 @@ export function WeddingInvitationPageContent() {
                 const element = document.documentElement;
                 if (element.requestFullscreen) {
                     element.requestFullscreen().catch(err => {
-                        console.log(`Gagal mengaktifkan mode layar penuh: '${err.message}' ('${err.name}')`);
+                        console.log(`Gagal mengaktifkan mode layar penuh: '\${err.message}' ('\${err.name}')`);
                     });
                 }
             }
@@ -366,7 +366,7 @@ export function WeddingInvitationPageContent() {
 
   const handleCopyToClipboard = (text: string, type: 'rekening' | 'nomor') => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Berhasil Disalin', description: `Nomor ${type} berhasil disalin ke clipboard.` });
+    toast({ title: 'Berhasil Disalin', description: `Nomor \${type} berhasil disalin ke clipboard.` });
   };
 
   if (isLoading) {
@@ -396,7 +396,7 @@ export function WeddingInvitationPageContent() {
                 </DialogHeader>
                 {weddingInfo.danaQrCodeUrl && (
                     <div className="relative aspect-square w-full">
-                        <Image src={weddingInfo.danaQrCodeUrl} alt="DANA QR Code" layout="fill" objectFit="contain"/>
+                        <Image src={weddingInfo.danaQrCodeUrl} alt="DANA QR Code" fill objectFit="contain"/>
                     </div>
                 )}
             </DialogContent>
@@ -404,7 +404,7 @@ export function WeddingInvitationPageContent() {
 
         <AnimatePresence>
         {!isOpened && (
-            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-between overflow-hidden p-8" onContextMenu={(e) => e.preventDefault()}>
             
             {/* Background Layer */}
             {weddingInfo.coverImageUrl && (
@@ -423,22 +423,22 @@ export function WeddingInvitationPageContent() {
              {/* Top Left Flower Stack */}
             <div className="absolute top-0 left-0 w-1/3 md:w-1/4 h-auto transform -scale-x-100">
                  {weddingInfo.flowerAsset2Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-2">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 80, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-2">
                         <Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset3Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-3">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 70, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-3">
                         <Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset4Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-4">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 30, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-4">
                         <Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset5Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 50, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full">
                         <Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
@@ -469,22 +469,26 @@ export function WeddingInvitationPageContent() {
             </div>
             
             {/* Content Layer */}
-            <div className="relative z-10 flex h-full w-full flex-col items-center p-8">
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-between">
                 
-                 <div className="flex-grow flex flex-col justify-end text-center pb-8">
-                    <motion.div
+                {/* Ornament at the top */}
+                <div className="w-full flex-shrink-0 pt-8">
+                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 1.1, duration: 0.8 }}
-                      className="mb-4 sm:-mt-8"
                     >
-                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="Ornament" width={700} height={700} className="mx-auto" />}
+                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="Ornament" width={700} height={700} className="object-contain mx-auto w-[550px] md:w-[700px]" />}
                     </motion.div>
+                </div>
+
+                {/* Text content in the middle/bottom */}
+                <div className="flex flex-col justify-end text-center flex-grow w-full pb-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 0.8 }}
-                        className="text-center mb-4 text-upd-primary"
+                        className="text-center text-upd-primary"
                     >
                         <p className="tracking-widest">The Wedding Of</p>
                     </motion.div>
@@ -493,25 +497,22 @@ export function WeddingInvitationPageContent() {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.7, duration: 0.8 }}
-                        className="text-upd-primary text-5xl md:text-6xl flex flex-col items-center"
+                        className="text-upd-primary text-4xl md:text-7xl flex flex-col items-center"
                         style={coverFontStyle}
                     >
                         <span>{weddingInfo.brideName}</span>
-                        <span className="text-4xl my-2">&amp;</span>
+                        <span className="text-3xl md:text-5xl my-1">&amp;</span>
                         <span>{weddingInfo.groomName}</span>
                     </motion.div>
                     
                     <GuestNameDisplay guest={guest} fontStyle={coverFontStyle} />
 
-                </div>
-
-                <div className="text-center">
                     <motion.button
                         onClick={handleOpenInvitation}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1, scale: [1, 1.05, 1] }}
                         transition={{ opacity: { delay: 1.2, duration: 0.8 }, scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } }}
-                        className="inline-flex items-center gap-3 text-sm font-semibold tracking-wider bg-upd-primary text-upd-primary-foreground py-2 px-6 rounded-full shadow-lg"
+                        className="inline-flex items-center gap-3 text-sm font-semibold tracking-wider bg-upd-primary text-upd-primary-foreground py-2 px-6 rounded-full shadow-lg mx-auto mt-8"
                     >
                         <Mail className="h-4 w-4" /> Buka Undangan
                     </motion.button>
@@ -519,10 +520,6 @@ export function WeddingInvitationPageContent() {
             </div>
             </div>
         )}
-        </AnimatePresence>
-        
-        <AnimatePresence>
-        {isOpened && <FloatingNav onScroll={scrollToSection} onToggleMusic={toggleMusic} isMusicPlaying={isMusicPlaying} />}
         </AnimatePresence>
         
         <div id="main-invitation" className={cn("relative w-full min-h-screen overflow-y-auto", isOpened ? 'block' : 'hidden')}>
@@ -557,7 +554,7 @@ export function WeddingInvitationPageContent() {
                            <span className="text-4xl md:text-6xl my-2">&amp;</span>
                            <span>{weddingInfo.groomName}</span>
                         </h1>
-                        <p className="text-lg">{weddingInfo.receptionDate}</p>
+                        <p className="text-lg font-bold tracking-wider">{weddingInfo.receptionDate}</p>
                         {isClient && weddingInfo.countdownTargetDate && <CountdownTimer targetDate={weddingInfo.countdownTargetDate} />}
                         <div className="flex items-center justify-center gap-4 mt-8 animate-pulse-heart">
                             <Heart className="h-6 w-6"/>
@@ -571,7 +568,7 @@ export function WeddingInvitationPageContent() {
 
                 <main className="max-w-4xl mx-auto px-4 py-16 sm:py-24 space-y-24">
                     <AnimatedSection id="couple" className="text-center relative">
-                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="ornament" layout="responsive" width={700} height={700} className="mx-auto mb-8 w-[550px] h-[550px] md:w-[700px] md:h-[700px]" />}
+                        {weddingInfo.coverOpeningImageUrl && <Image src={weddingInfo.coverOpeningImageUrl} alt="ornament" width={700} height={700} className="object-contain mx-auto w-[400px] h-auto md:w-[700px]" />}
                         <h3 className="text-4xl md:text-5xl mb-4 font-arabic" style={{fontFamily: "serif"}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</h3>
                         <h2 className="text-2xl md:text-3xl font-bold mt-8 mb-4" style={{ fontFamily: "'Great Vibes', cursive" }}>Assalamualaikum Warahmatullahi Wabarakatuh</h2>
                         <p className="text-muted-foreground max-w-2xl mx-auto mb-12">
@@ -729,9 +726,9 @@ export function WeddingInvitationPageContent() {
                         <AnimatedSection id="families" className="text-center">
                             {weddingInfo.dividerOrnamentUrl && <Image src={weddingInfo.dividerOrnamentUrl} alt="ornament" width={100} height={100} className="mx-auto mb-8" />}
                             <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ fontFamily: "'Great Vibes', cursive" }}>Turut Mengundang</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4 pl-12">
                                 {weddingInfo.invitedFamilies.map((family, index) => (
-                                    <div key={index} className="flex items-center justify-center gap-2">
+                                    <div key={index} className="flex items-center justify-start gap-2">
                                         <User className="h-5 w-5 text-muted-foreground" />
                                         <p className="text-lg text-muted-foreground">{family}</p>
                                     </div>
