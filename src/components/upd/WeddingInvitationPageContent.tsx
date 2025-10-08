@@ -204,7 +204,7 @@ export function WeddingInvitationPageContent() {
     return 'type-01';
   }, [pathname]);
 
-  const guest = searchParams.get('tamu');
+  const guest = searchParams.get('to');
   const guestName = guest || 'Tamu Undangan';
 
   const [isOpened, setIsOpened] = useState(false);
@@ -255,16 +255,18 @@ export function WeddingInvitationPageContent() {
         };
     }, [invitationId]);
 
-  useEffect(() => {
-    if (!weddingInfo) return;
-    if (typeof window !== 'undefined' && !audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.loop = true;
+   useEffect(() => {
+    if (typeof window !== 'undefined') {
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+            audioRef.current.loop = true;
+        }
+        if (weddingInfo?.backgroundMusicUrl && audioRef.current.src !== weddingInfo.backgroundMusicUrl) {
+            audioRef.current.src = weddingInfo.backgroundMusicUrl;
+            audioRef.current.load(); // Make sure the new source is loaded
+        }
     }
-     if (audioRef.current && weddingInfo.isMusicEnabled && weddingInfo.backgroundMusicUrl) {
-        audioRef.current.src = weddingInfo.backgroundMusicUrl;
-    }
-  }, [weddingInfo]);
+}, [weddingInfo?.backgroundMusicUrl]);
 
 
   useEffect(() => {
@@ -316,9 +318,6 @@ export function WeddingInvitationPageContent() {
   const handleOpenInvitation = () => {
     setIsOpened(true);
     if (weddingInfo?.isMusicEnabled && audioRef.current) {
-        if(audioRef.current.src !== weddingInfo.backgroundMusicUrl) {
-            audioRef.current.src = weddingInfo.backgroundMusicUrl!;
-        }
         audioRef.current.play().catch(e => console.error("Gagal memulai audio:", e));
         setIsMusicPlaying(true);
     }
@@ -366,7 +365,7 @@ export function WeddingInvitationPageContent() {
 
   const handleCopyToClipboard = (text: string, type: 'rekening' | 'nomor') => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Berhasil Disalin', description: `Nomor \${type} berhasil disalin ke clipboard.` });
+    toast({ title: 'Berhasil Disalin', description: `Nomor ${type} berhasil disalin ke clipboard.` });
   };
 
   if (isLoading) {
@@ -387,7 +386,8 @@ export function WeddingInvitationPageContent() {
 
   return (
     <div className="w-full overflow-x-hidden font-sans text-sm md:text-base leading-relaxed text-foreground">
-        {isClient && <audio ref={audioRef} loop preload="auto"></audio>}
+        {isOpened && <FloatingNav onScroll={scrollToSection} onToggleMusic={toggleMusic} isMusicPlaying={isMusicPlaying} />}
+        {isClient && weddingInfo.backgroundMusicUrl && <audio ref={audioRef} loop preload="auto"></audio>}
         
         <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
             <DialogContent>
@@ -423,22 +423,22 @@ export function WeddingInvitationPageContent() {
              {/* Top Left Flower Stack */}
             <div className="absolute top-0 left-0 w-1/3 md:w-1/4 h-auto transform -scale-x-100">
                  {weddingInfo.flowerAsset2Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 80, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-2">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.6, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-2">
                         <Image src={weddingInfo.flowerAsset2Url} alt="Flower 2" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset3Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 70, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-3">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.7, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-3">
                         <Image src={weddingInfo.flowerAsset3Url} alt="Flower 3" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset4Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 30, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-4">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full animate-sway-4">
                         <Image src={weddingInfo.flowerAsset4Url} alt="Flower 4" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
                 {weddingInfo.flowerAsset5Url && (
-                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 50, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full">
+                    <motion.div initial={{ opacity: 0, x: -50, y: -50 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 1.9, duration: 1.5, ease: "easeOut" }} className="absolute top-0 left-0 w-full">
                         <Image src={weddingInfo.flowerAsset5Url} alt="Flower 5" width={400} height={400} className="w-full h-auto" />
                     </motion.div>
                 )}
@@ -651,7 +651,7 @@ export function WeddingInvitationPageContent() {
                                         <CarouselItem key={quote.id}>
                                             <div className="flex flex-col items-center text-center">
                                                 <div className="relative w-full h-[500px] mb-4">
-                                                    <Image src={quote.imageUrl} alt="Quote image" fill className="object-contain"/>
+                                                    <Image src={quote.imageUrl} alt="Quote image" fill objectFit="contain"/>
                                                 </div>
                                                 <p className="text-lg md:text-xl italic text-muted-foreground max-w-2xl mx-auto">
                                                     &quot;{quote.text}&quot;
@@ -748,7 +748,7 @@ export function WeddingInvitationPageContent() {
                                 {rsvpSubmitted && guestbookSubmitted ? (
                                     <p className="font-semibold text-upd-primary">Terima kasih atas konfirmasi dan ucapan Anda!</p>
                                 ) : (
-                                    <form onSubmit={handleRsvpSubmit} className="space-y-6 text-left">
+                                    <form onSubmit={guestbookSubmitted ? handleRsvpSubmit : handleGuestbookSubmit} className="space-y-6 text-left">
                                         <div className="space-y-2">
                                             <Label htmlFor="guest-name">Nama Anda</Label>
                                             <Input id="guest-name" value={rsvp.name} onChange={(e) => {
@@ -756,23 +756,29 @@ export function WeddingInvitationPageContent() {
                                                 setGuestbook({...guestbook, name: e.target.value});
                                             }} required />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Konfirmasi Kehadiran</Label>
-                                            <RadioGroup value={rsvp.attendance} onValueChange={(value) => setRsvp({ ...rsvp, attendance: value })} className="flex space-x-4">
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Hadir" id="attend" /><Label htmlFor="attend">Hadir</Label></div>
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Hadir" id="not-attend" /><Label htmlFor="not-attend">Tidak Hadir</Label></div>
-                                            </RadioGroup>
-                                        </div>
-                                        {rsvp.attendance === 'Hadir' && (
+                                        {!rsvpSubmitted && (
+                                            <>
+                                                <div className="space-y-2">
+                                                    <Label>Konfirmasi Kehadiran</Label>
+                                                    <RadioGroup value={rsvp.attendance} onValueChange={(value) => setRsvp({ ...rsvp, attendance: value })} className="flex space-x-4">
+                                                        <div className="flex items-center space-x-2"><RadioGroupItem value="Hadir" id="attend" /><Label htmlFor="attend">Hadir</Label></div>
+                                                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak Hadir" id="not-attend" /><Label htmlFor="not-attend">Tidak Hadir</Label></div>
+                                                    </RadioGroup>
+                                                </div>
+                                                {rsvp.attendance === 'Hadir' && (
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="rsvp-guests">Jumlah Tamu (termasuk Anda)</Label>
+                                                        <Input id="rsvp-guests" type="number" min="1" value={rsvp.guests} onChange={(e) => setRsvp({ ...rsvp, guests: parseInt(e.target.value, 10) })} />
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        {!guestbookSubmitted && (
                                             <div className="space-y-2">
-                                                <Label htmlFor="rsvp-guests">Jumlah Tamu (termasuk Anda)</Label>
-                                                <Input id="rsvp-guests" type="number" min="1" value={rsvp.guests} onChange={(e) => setRsvp({ ...rsvp, guests: parseInt(e.target.value, 10) })} />
+                                                <Label htmlFor="guestbook-message">Ucapan &amp; Doa</Label>
+                                                <Textarea id="guestbook-message" placeholder="Tuliskan ucapan dan doa terbaik Anda..." value={guestbook.message} onChange={(e) => setGuestbook({ ...guestbook, message: e.target.value })} required />
                                             </div>
                                         )}
-                                        <div className="space-y-2">
-                                            <Label htmlFor="guestbook-message">Ucapan &amp; Doa</Label>
-                                            <Textarea id="guestbook-message" placeholder="Tuliskan ucapan dan doa terbaik Anda..." value={guestbook.message} onChange={(e) => setGuestbook({ ...guestbook, message: e.target.value })} required />
-                                        </div>
                                         <Button type="submit" className="w-full bg-upd-primary text-upd-primary-foreground hover:bg-upd-primary/90 gap-2">
                                             <Send className="h-4 w-4"/> Kirim
                                         </Button>
@@ -815,3 +821,4 @@ export function WeddingInvitationPageContent() {
     </div>
   );
 }
+

@@ -1,25 +1,53 @@
 
-'use client';
 
-import type { Metadata } from 'next';
-import '../../../globals.css';
-import { withAuth } from '@/context/AuthContext';
+import * as React from 'react';
+import type {Metadata} from 'next';
+import '../../globals.css';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { WeddingInfo } from '@/lib/types';
+import Head from 'next/head';
 
-// Metadata object cannot be used in a client component.
-// We will manage the title from the page component if needed.
-/*
-export const metadata: Metadata = {
-  title: 'Admin Dasbor | The Wedding of Anya & Loid',
-  description: 'Kelola buku tamu, moderasi, dan pengaturan untuk undangan pernikahan Anda.',
-};
-*/
+async function getWeddingInfoForMeta(): Promise<Partial<WeddingInfo>> {
+    try {
+        const weddingInfoRef = doc(db, "invitations/type-01/settings", "weddingInfo");
+        const weddingInfoSnap = await getDoc(weddingInfoRef);
+        if (weddingInfoSnap.exists()) {
+            return weddingInfoSnap.data() as Partial<WeddingInfo>;
+        }
+    } catch (error) {
+        console.error("Error fetching wedding info for metadata:", error);
+    }
+    return {
+        brideName: "Mempelai Wanita",
+        groomName: "Mempelai Pria",
+    };
+}
 
-function AdminLayout({ children }: { children: React.ReactNode }) {
+
+export async function generateMetadata(): Promise<Metadata> {
+  const weddingInfo = await getWeddingInfoForMeta();
+  return {
+    title: `The Wedding of ${weddingInfo.brideName} & ${weddingInfo.groomName}`,
+    description: `Kami mengundang Anda untuk merayakan hari bahagia kami.`,
+  };
+}
+
+
+export default async function UpdLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+
   return (
     <main className="antialiased font-sans">
-      {children}
+        <Head>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+        </Head>
+        {children}
     </main>
   );
 }
-
-export default withAuth(AdminLayout);
