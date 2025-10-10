@@ -1,0 +1,64 @@
+{
+  "placeholderImages": [
+    {
+      "id": "espresso",
+      "description": "A shot of espresso.",
+      "imageUrl": "https://images.unsplash.com/photo-1593623438334-73c3d5ed85aa?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "espresso shot"
+    },
+    {
+      "id": "cappuccino",
+      "description": "A classic cappuccino with latte art.",
+      "imageUrl": "https://images.unsplash.com/photo-1557899613-2337e58c894f?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "cappuccino"
+    },
+    {
+      "id": "iced-latte",
+      "description": "A refreshing iced latte in a tall glass.",
+      "imageUrl": "https://images.unsplash.com/photo-1543387342-944a9914b434?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "iced latte"
+    },
+    {
+      "id": "mocha",
+      "description": "A delicious mocha with whipped cream.",
+      "imageUrl": "https://images.unsplash.com/photo-1596700200839-582b2d075252?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "mocha coffee"
+    },
+    {
+      "id": "turkey-sandwich",
+      "description": "A hearty turkey club sandwich.",
+      "imageUrl": "https://images.unsplash.com/photo-1592415486695-555540324159?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "turkey sandwich"
+    },
+    {
+      "id": "avocado-toast",
+      "description": "Avocado toast on sourdough bread.",
+      "imageUrl": "https://images.unsplash.com/photo-1588269115167-9a4f4d2f00a5?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "avocado toast"
+    },
+    {
+      "id": "quiche-lorraine",
+      "description": "A slice of quiche lorraine.",
+      "imageUrl": "https://images.unsplash.com/photo-1618451381335-57c2a55b3310?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "quiche"
+    },
+    {
+      "id": "chocolate-cookie",
+      "description": "A chocolate chip cookie.",
+      "imageUrl": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "chocolate cookie"
+    },
+    {
+      "id": "blueberry-muffin",
+      "description": "A blueberry muffin.",
+      "imageUrl": "https://images.unsplash.com/photo-1577083236544-a633599427fb?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "blueberry muffin"
+    },
+    {
+      "id": "croissant",
+      "description": "A flaky croissant.",
+      "imageUrl": "https://images.unsplash.com/photo-1608779904107-735957388147?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "croissant"
+    }
+  ]
+}
