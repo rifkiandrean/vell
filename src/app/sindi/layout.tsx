@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type {Metadata} from 'next';
-import '../../globals.css';
+import '../globals.css';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { WeddingInfo } from '@/lib/types';
@@ -10,7 +10,7 @@ import Head from 'next/head';
 
 async function getWeddingInfoForMeta(): Promise<Partial<WeddingInfo>> {
     try {
-        const weddingInfoRef = doc(db, "invitations/type-01/settings", "weddingInfo");
+        const weddingInfoRef = doc(db, "invitations/sindi/settings", "weddingInfo");
         const weddingInfoSnap = await getDoc(weddingInfoRef);
         if (weddingInfoSnap.exists()) {
             return weddingInfoSnap.data() as Partial<WeddingInfo>;

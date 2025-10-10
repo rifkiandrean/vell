@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -90,7 +89,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-const INVITATION_ID = 'type-01';
+const INVITATION_ID = 'sindi';
 
 // --- Data Types ---
 interface RsvpEntry {
@@ -1201,7 +1200,7 @@ export default function UpdAdminPage() {
       <div className="min-h-screen bg-background text-foreground">
         <header className="py-4 px-6 sticky top-0 bg-background/80 backdrop-blur-sm z-10 border-b">
           <Button asChild variant="outline">
-            <Link href={`/upd/${INVITATION_ID}`}>
+            <Link href={`/${INVITATION_ID}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Kembali ke Undangan
             </Link>
@@ -1266,4 +1265,3 @@ export default function UpdAdminPage() {
     </Dialog>
   );
 }
-

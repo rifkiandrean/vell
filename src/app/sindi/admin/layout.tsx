@@ -2,7 +2,7 @@
 'use client';
 
 import type { Metadata } from 'next';
-import '../../../globals.css';
+import '../../globals.css';
 import { withAuth } from '@/context/AuthContext';
 
 // Metadata object cannot be used in a client component.

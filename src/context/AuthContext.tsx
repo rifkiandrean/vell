@@ -7,20 +7,12 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, User,
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
-import type { CompanyInfo, LandingPageContent } from '@/lib/types';
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  companyName: string;
-  address?: string;
-  phone?: string;
-  logoUrl?: string;
-  ersLogoUrl?: string;
-  vellLogoUrl?: string;
-  websiteVersion?: string;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<any>;
   createUser: (email: string, password: string, displayName: string, role: string) => Promise<void>;
@@ -30,11 +22,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
-export const AuthProvider = ({ children, companyName: initialCompanyName }: { children: React.ReactNode, companyName: string }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({ companyName: initialCompanyName, logoUrl: '', ersLogoUrl: '', websiteVersion: ''});
-  const [landingPageContent, setLandingPageContent] = useState<LandingPageContent>({});
 
   const transformGoogleDriveUrl = (url: string): string => {
     return url;
@@ -49,25 +39,11 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
   };
 
   const createUser = async (email: string, password: string, displayName: string, role: string) => {
-    // This function should call a Firebase Function to create a user and set custom claims.
-    // Directly creating user from client is okay for display name, but not for roles (custom claims).
-    // For this example, we'll simulate the user creation part and assume a function would set the role.
-
     const functions = getFunctions();
     const setUserRole = httpsCallable(functions, 'setUserRole');
 
-    // Create user in a secondary auth instance to not affect current user's session
-    const { UserCredentialImpl } = await import('firebase/auth');
-    const tempAuth = getAuth(); // It's tricky to create a truly separate auth instance on client
-    
-    // For now, let's create the user directly. THIS IS NOT SECURE FOR SETTING ROLES.
-    // In a real app, this should be a call to a Firebase Function.
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName });
-
-    // The secure way: call a Firebase Function to set the role
-    // await setUserRole({ uid: userCredential.user.uid, role: role });
-    // For now, we just log this action.
     console.log(`User ${displayName} created with email ${email} and role ${role}. In a real app, a Cloud Function would set the custom claim.`);
   };
 
@@ -77,39 +53,14 @@ export const AuthProvider = ({ children, companyName: initialCompanyName }: { ch
       setLoading(false);
     });
 
-    const unsubCompanyInfo = onSnapshot(doc(db, "settings", "companyInfo"), (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data() as CompanyInfo;
-            setCompanyInfo({
-                ...data,
-                companyName: data.companyName || initialCompanyName,
-            });
-        }
-    });
-
-    const unsubLandingPage = onSnapshot(doc(db, "settings", "landingPage"), (docSnap) => {
-        if (docSnap.exists()) {
-            setLandingPageContent(docSnap.data() as LandingPageContent);
-        }
-    });
-
     return () => {
         unsubAuth();
-        unsubCompanyInfo();
-        unsubLandingPage();
     };
-  }, [initialCompanyName]);
+  }, []);
 
   const value = {
     user,
     loading,
-    companyName: companyInfo.companyName,
-    address: companyInfo.address,
-    phone: companyInfo.phone,
-    logoUrl: companyInfo.logoUrl || '',
-    ersLogoUrl: companyInfo.ersLogoUrl || '',
-    vellLogoUrl: landingPageContent.vellLogoUrl || '',
-    websiteVersion: companyInfo.websiteVersion,
     login,
     logout,
     createUser,
@@ -140,23 +91,11 @@ export function withAuth<P extends object>(WrappedComponent: React.ComponentType
         useEffect(() => {
             if (loading) return;
 
-            const isUpdAdminPath = pathname.startsWith('/upd/') && pathname.includes('/admin');
-            const isErsCafeAdminPath = pathname.startsWith('/ers/cafe/admin');
-            const isAdminPath = pathname.startsWith('/admin');
+            const isAdminPath = pathname.startsWith('/sindi/admin');
+            const isLoginPath = pathname.endsWith('/login');
 
-            const isUpdLoginPath = isUpdAdminPath && pathname.endsWith('/login');
-            const isErsCafeLoginPath = pathname === '/ers/cafe/admin/login';
-            const isAdminLoginPath = pathname === '/admin/login';
-
-            if (!user) {
-                if (isUpdAdminPath && !isUpdLoginPath) {
-                    const invitationId = pathname.split('/')[2];
-                    router.replace(`/upd/${invitationId}/admin/login`);
-                } else if (isErsCafeAdminPath && !isErsCafeLoginPath) {
-                    router.replace('/ers/cafe/admin/login');
-                } else if (isAdminPath && !isAdminLoginPath) {
-                    router.replace('/admin/login');
-                }
+            if (!user && isAdminPath && !isLoginPath) {
+                router.replace(`/sindi/admin/login`);
             }
         }, [user, loading, router, pathname]);
 

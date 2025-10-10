@@ -96,8 +96,8 @@ export default function LoginPage() {
           {ersLogoUrl && (
              <Image src={ersLogoUrl} alt="VELL Logo" width={24} height={24} className="h-6 w-6 object-contain" />
           )}
-          <span>Copyright © VELL</span>
-          <span>Sistem Restoran Elektronik</span>
+          <span>Copyright 2025 © VELL</span>
+          <span>DIGITAL SISTEM INFORMASI</span>
         </div>
       </footer>
     </div>

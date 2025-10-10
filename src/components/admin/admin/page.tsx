@@ -289,6 +289,7 @@ function ModerationContent({
               </Button>
               <Button
                 size="sm"
+                className="bg-green-600 hover:bg-green-700"
                 onClick={() => onApprove(msg.id, msg.name)}
               >
                 <Check className="h-4 w-4 md:mr-2" />
@@ -635,7 +636,7 @@ function SettingsContent({
 
 // --- Gallery Tab Component ---
 function GalleryContent() {
-    const { user } = useAuth();
+    const { user, transformGoogleDriveUrl } = useAuth();
     const { toast } = useToast();
     const [images, setImages] = useState<GalleryImage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -715,7 +716,7 @@ function GalleryContent() {
                         images.map(image => (
                             <div key={image.id} className="relative group aspect-square">
                                 <Image
-                                    src={image.imageUrl}
+                                    src={transformGoogleDriveUrl(image.imageUrl)}
                                     alt="Gallery image"
                                     fill
                                     className="object-cover rounded-lg"
