@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 38 67% 99%; /* creamy off-white */
+    --foreground: 20 29% 28%; /* dark brown */
+
+    --card: 38 67% 99%;
+    --card-foreground: 20 29% 28%;
+
+    --popover: 38 67% 99%;
+    --popover-foreground: 20 29% 28%;
+    
+    --primary: 38 49% 43%; /* Gold: #A4753A */
+    --primary-foreground: 38 100% 98%;
+
+    --secondary: 38 33% 90%; /* Light beige */
+    --secondary-foreground: 20 29% 28%;
+
+    --muted: 38 33% 95%; /* Lighter beige */
+    --muted-foreground: 20 25% 45%;
+
+    --accent: 38 33% 90%; /* Light beige */
+    --accent-foreground: 38 49% 43%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 38 20% 85%;
+    --input: 38 20% 85%;
+    --ring: 38 49% 43%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 20 29% 15%; /* Dark brown */
+    --foreground: 38 33% 90%; /* Light beige */
+
+    --card: 20 29% 17%;
+    --card-foreground: 38 33% 90%;
+
+    --popover: 20 29% 17%;
+    --popover-foreground: 38 33% 90%;
+
+    --primary: 38 49% 43%; /* Gold */
+    --primary-foreground: 38 100% 98%;
+
+    --secondary: 20 29% 25%;
+    --secondary-foreground: 38 33% 90%;
+
+    --muted: 20 29% 25%;
+    --muted-foreground: 38 33% 70%;
+
+    --accent: 20 29% 25%;
+    --accent-foreground: 38 49% 43%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 20 29% 30%;
+    --input: 20 29% 30%;
+    --ring: 38 49% 43%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes spin-slow { /* Renamed to gentle-sway */
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes pulse-subtle { /* Renamed to faster-sway */
+    0%, 100% { transform: rotate(3deg) translateX(-2px); }
+    50% { transform: rotate(-3deg) translateX(2px); }
+  }
+  @keyframes swing { /* Renamed to tremble */
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    25% { transform: translate(1px, 1px) rotate(1deg); }
+    75% { transform: translate(-1px, -1px) rotate(-1deg); }
+  }
+  @keyframes fade-in-out { /* Renamed to long-swing */
+    0%, 100% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s ease-in-out infinite;
+    transform-origin: top center;
+  }
+  .animate-pulse-subtle {
+    animation: pulse-subtle 5s ease-in-out infinite;
+    transform-origin: top center;
+  }
+  .animate-swing {
+    animation: swing 6s ease-in-out infinite;
+    transform-origin: top center;
+  }
+  .animate-fade-in-out {
+    animation: fade-in-out 12s ease-in-out infinite;
+    transform-origin: top center;
+  }
+}

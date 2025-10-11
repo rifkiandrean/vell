@@ -1,0 +1,40 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "Romantic background for wedding hero",
+      "imageUrl": "https://picsum.photos/seed/weddingHero/1920/1080",
+      "imageHint": "wedding background"
+    },
+    {
+      "id": "gallery-1",
+      "description": "Couple smiling and holding hands",
+      "imageUrl": "https://picsum.photos/seed/wedding1/800/600",
+      "imageHint": "couple portrait"
+    },
+    {
+      "id": "gallery-2",
+      "description": "Close up of wedding rings",
+      "imageUrl": "https://picsum.photos/seed/wedding2/800/600",
+      "imageHint": "wedding rings"
+    },
+    {
+      "id": "gallery-3",
+      "description": "Couple walking on a beach at sunset",
+      "imageUrl": "https://picsum.photos/seed/wedding3/800/600",
+      "imageHint": "couple sunset"
+    },
+    {
+      "id": "gallery-4",
+      "description": "A beautiful wedding cake",
+      "imageUrl": "https://picsum.photos/seed/wedding4/800/600",
+      "imageHint": "wedding cake"
+    },
+    {
+      "id": "gallery-5",
+      "description": "Bouquet of flowers",
+      "imageUrl": "https://picsum.photos/seed/wedding5/800/600",
+      "imageHint": "wedding bouquet"
+    }
+  ]
+}

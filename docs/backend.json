@@ -1,0 +1,334 @@
+{
+  "entities": {
+    "RSVP": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RSVP",
+      "type": "object",
+      "description": "Represents an RSVP from a wedding invitee.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the RSVP entry."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the invitee."
+        },
+        "attendanceStatus": {
+          "type": "string",
+          "description": "Indicates whether the invitee will attend (e.g., 'attending', 'not attending')."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "attendanceStatus"
+      ]
+    },
+    "GuestbookMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GuestbookMessage",
+      "type": "object",
+      "description": "Represents a message left by a guest in the guestbook.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the guestbook message."
+        },
+        "guestName": {
+          "type": "string",
+          "description": "Name of the guest leaving the message."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message left by the guest."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the message was left.",
+          "format": "date-time"
+        },
+        "adminReply": {
+          "type": "string",
+          "description": "A reply to the guest's message from the admin/couple."
+        },
+        "adminReplierName": {
+          "type": "string",
+          "description": "The name of the admin who replied."
+        },
+        "likes": {
+          "type": "array",
+          "description": "A list of guest names who have liked this message.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "guestName",
+        "message",
+        "timestamp"
+      ]
+    },
+    "WeddingDetails": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WeddingDetails",
+      "type": "object",
+      "description": "Stores all details for a specific wedding invitation.",
+      "properties": {
+        "coupleName": {
+          "type": "string",
+          "description": "The names of the couple, e.g., 'Sindi & Darsono'."
+        },
+        "eventDate": {
+          "type": "string",
+          "description": "The date of the event, e.g., 'Saturday, September 28, 2024'."
+        },
+        "eventTime": {
+          "type": "string",
+          "description": "The time of the event, e.g., '4:00 PM onwards'."
+        },
+        "eventLocation": {
+          "type": "string",
+          "description": "The name of the event location, e.g., 'The Grand Ballroom'."
+        },
+        "eventAddress": {
+          "type": "string",
+          "description": "The full address of the event location."
+        },
+        "dressCode": {
+          "type": "string",
+          "description": "The dress code for the event."
+        },
+        "quote": {
+          "type": "string",
+          "description": "A quote to display on the invitation page."
+        },
+        "coverMainImageUrl": {
+            "type": "string",
+            "description": "URL for the main image on the invitation cover."
+        },
+        "coverBackgroundUrl": {
+            "type": "string",
+            "description": "URL for the background image on the invitation cover."
+        },
+        "backgroundUrl": {
+            "type": "string",
+            "description": "URL for the background image on the main invitation page."
+        },
+        "flowerFrameUrls": {
+            "type": "object",
+            "description": "URLs for the flower frame images on the cover.",
+            "properties": {
+                "topLeft": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "topRight": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                }
+            }
+        }
+      },
+      "required": [
+        "coupleName",
+        "eventDate",
+        "eventTime",
+        "eventLocation",
+        "eventAddress",
+        "dressCode"
+      ]
+    },
+    "EventDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EventDetail",
+      "type": "object",
+      "description": "Stores the details of the wedding event.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the event details."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the event.",
+          "format": "date-time"
+        },
+        "time": {
+          "type": "string",
+          "description": "Time of the event."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the event."
+        },
+        "dressCode": {
+          "type": "string",
+          "description": "Dress code for the event."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "time",
+        "location"
+      ]
+    },
+    "Photo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Photo",
+      "type": "object",
+      "description": "Represents a photo in the photo gallery.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the photo."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the photo.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description of the photo."
+        }
+      },
+      "required": [
+        "id",
+        "url"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/rsvps/{rsvpId}",
+        "definition": {
+          "entityName": "RSVP",
+          "schema": {
+            "$ref": "#/backend/entities/RSVP"
+          },
+          "description": "Collection to store RSVP information from wedding invitees. Includes fields for name, and attendance status. Open for anonymous users.",
+          "params": [
+            {
+              "name": "rsvpId",
+              "description": "Unique identifier for each RSVP document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/guestbook_messages/{messageId}",
+        "definition": {
+          "entityName": "GuestbookMessage",
+          "schema": {
+            "$ref": "#/backend/entities/GuestbookMessage"
+          },
+          "description": "Collection to store guestbook messages left by guests. Includes fields for guest name, message content, and timestamp. Open for anonymous users.",
+          "params": [
+            {
+              "name": "messageId",
+              "description": "Unique identifier for each guestbook message document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/sindi_rsvps/{rsvpId}",
+        "definition": {
+          "entityName": "RSVP",
+          "schema": {
+            "$ref": "#/backend/entities/RSVP"
+          },
+          "description": "Collection to store RSVP information for Sindi's wedding.",
+          "params": [
+            {
+              "name": "rsvpId",
+              "description": "Unique identifier for each RSVP document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/sindi_guestbook_messages/{messageId}",
+        "definition": {
+          "entityName": "GuestbookMessage",
+          "schema": {
+            "$ref": "#/backend/entities/GuestbookMessage"
+          },
+          "description": "Collection to store guestbook messages for Sindi's wedding.",
+          "params": [
+            {
+              "name": "messageId",
+              "description": "Unique identifier for each guestbook message document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/weddings/{weddingId}",
+        "definition": {
+          "entityName": "WeddingDetails",
+          "schema": {
+            "$ref": "#/backend/entities/WeddingDetails"
+          },
+          "description": "Stores all details for a specific wedding. Each document ID corresponds to a unique wedding (e.g., 'sindi').",
+          "params": [
+            {
+              "name": "weddingId",
+              "description": "The unique identifier for the wedding."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/event_details/{eventId}",
+        "definition": {
+          "entityName": "EventDetail",
+          "schema": {
+            "$ref": "#/backend/entities/EventDetail"
+          },
+          "description": "Collection to store wedding event details, such as date, time, location, and dress code. Open for anonymous users.",
+          "params": [
+            {
+              "name": "eventId",
+              "description": "Unique identifier for the event details document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/photos/{photoId}",
+        "definition": {
+          "entityName": "Photo",
+          "schema": {
+            "$ref": "#/backend/entities/Photo"
+          },
+          "description": "Collection to store photo gallery images and their URLs. Open for anonymous users.",
+          "params": [
+            {
+              "name": "photoId",
+              "description": "Unique identifier for each photo document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage data for the NikahGo wedding invitation app, focusing on RSVPs, guestbook messages, event details, and photos. It emphasizes authorization independence, clarity, and security, following the DBAC (Database-Based Access Control) approach. Segregation of data into separate collections based on function simplifies security rules. No hierarchical authorization dependencies (`get()`) are required, as all authorization is based on `request.auth.uid` (though anonymous auth is enabled). Since the application doesn't specify user roles or collaborative features, data is primarily public, and the structure focuses on organizing the data efficiently. The structure does not currently enforce fine-grained access control beyond what's provided by the anonymous authentication method. To enhance security, particularly for sensitive data, implementing user accounts with email/password or other authentication providers along with appropriate security rules is recommended."
+  }
+}
